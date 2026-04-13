@@ -1,0 +1,85 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\ebrahim.attia\\Downloads\\zool\\HubMisureEE\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{7F852EE0-822D-401F-A157-3A130C604BC4}|ClassLibrary1\\HubMisureEE.csproj|c:\\users\\ebrahim.attia\\downloads\\zool\\hubmisureee\\classlibrary1\\services\\saveflusso.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7F852EE0-822D-401F-A157-3A130C604BC4}|ClassLibrary1\\HubMisureEE.csproj|solutionrelative:classlibrary1\\services\\saveflusso.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7F852EE0-822D-401F-A157-3A130C604BC4}|ClassLibrary1\\HubMisureEE.csproj|C:\\Users\\ebrahim.attia\\Downloads\\zool\\HubMisureEE\\classlibrary1\\services\\caricaxml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7F852EE0-822D-401F-A157-3A130C604BC4}|ClassLibrary1\\HubMisureEE.csproj|solutionrelative:classlibrary1\\services\\caricaxml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7F852EE0-822D-401F-A157-3A130C604BC4}|ClassLibrary1\\HubMisureEE.csproj|C:\\Users\\ebrahim.attia\\Downloads\\zool\\HubMisureEE\\classlibrary1\\services\\importatori.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7F852EE0-822D-401F-A157-3A130C604BC4}|ClassLibrary1\\HubMisureEE.csproj|solutionrelative:classlibrary1\\services\\importatori.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7F852EE0-822D-401F-A157-3A130C604BC4}|ClassLibrary1\\HubMisureEE.csproj|C:\\Users\\ebrahim.attia\\Downloads\\zool\\HubMisureEE\\classlibrary1\\app.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{7F852EE0-822D-401F-A157-3A130C604BC4}|ClassLibrary1\\HubMisureEE.csproj|solutionrelative:classlibrary1\\app.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "CaricaXML.cs",
+              "DocumentMoniker": "C:\\Users\\ebrahim.attia\\Downloads\\zool\\HubMisureEE\\ClassLibrary1\\Services\\CaricaXML.cs",
+              "RelativeDocumentMoniker": "ClassLibrary1\\Services\\CaricaXML.cs",
+              "ToolTip": "C:\\Users\\ebrahim.attia\\Downloads\\zool\\HubMisureEE\\ClassLibrary1\\Services\\CaricaXML.cs",
+              "RelativeToolTip": "ClassLibrary1\\Services\\CaricaXML.cs",
+              "ViewState": "AgIAACsAAAAAAAAAAADwv0gAAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-10T14:22:13.413Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "app.config",
+              "DocumentMoniker": "C:\\Users\\ebrahim.attia\\Downloads\\zool\\HubMisureEE\\ClassLibrary1\\app.config",
+              "RelativeDocumentMoniker": "ClassLibrary1\\app.config",
+              "ToolTip": "C:\\Users\\ebrahim.attia\\Downloads\\zool\\HubMisureEE\\ClassLibrary1\\app.config",
+              "RelativeToolTip": "ClassLibrary1\\app.config",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
+              "WhenOpened": "2026-04-10T13:50:47.301Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Importatori.cs",
+              "DocumentMoniker": "C:\\Users\\ebrahim.attia\\Downloads\\zool\\HubMisureEE\\ClassLibrary1\\Services\\Importatori.cs",
+              "RelativeDocumentMoniker": "ClassLibrary1\\Services\\Importatori.cs",
+              "ToolTip": "C:\\Users\\ebrahim.attia\\Downloads\\zool\\HubMisureEE\\ClassLibrary1\\Services\\Importatori.cs",
+              "RelativeToolTip": "ClassLibrary1\\Services\\Importatori.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-10T10:52:09.147Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "SaveFlusso.cs",
+              "DocumentMoniker": "C:\\Users\\ebrahim.attia\\Downloads\\zool\\HubMisureEE\\ClassLibrary1\\Services\\SaveFlusso.cs",
+              "RelativeDocumentMoniker": "ClassLibrary1\\Services\\SaveFlusso.cs",
+              "ToolTip": "C:\\Users\\ebrahim.attia\\Downloads\\zool\\HubMisureEE\\ClassLibrary1\\Services\\SaveFlusso.cs",
+              "RelativeToolTip": "ClassLibrary1\\Services\\SaveFlusso.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAABIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-08T15:56:52.041Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
