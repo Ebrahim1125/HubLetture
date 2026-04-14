@@ -288,6 +288,7 @@ namespace Vendita.HubMisureEE.Services
                 //Scrittura col bulk
                 Bulk2DB(QE, "Curve", connessione);
                 Bulk2DB(dtLetture, "Letture", connessione);
+                Bulk2DB(FileXml, "FileXml", connessione);
             }
         }
         public static void SaveFlusso2DB(Models.Rettifica.FlussoMisure FlussoRettifica, SqlConnection connessione, string FolderLavoro, int idFileXml, string fileName)
@@ -590,6 +591,7 @@ namespace Vendita.HubMisureEE.Services
                 //Scrittura col Bulk
                 Bulk2DB(dtLetture, "Letture", connessione);
                 Bulk2DB(QE, "Curve", connessione);
+                Bulk2DB(FileXml, "FileXml", connessione);
             }
         }
 
