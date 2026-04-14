@@ -1,6 +1,4 @@
-﻿using log4net;
-using log4net.Config;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -9,13 +7,10 @@ using System.IO.Compression;
 using System.Linq;
 using System.Xml;
 
-[assembly: XmlConfigurator(Watch = true)]
-
 namespace Vendita.HubMisureEE.Services
 {
     public class ZipExtractorService
     {
-        private static readonly ILog logger = LogManager.GetLogger(typeof(ZipExtractorService));
         public static List<XmlDocument> UnloadZip(string inFile, string outFile, string stringConnect, out int IdFIleXml)
         {
             string[] zipFiles = null;
@@ -27,15 +22,16 @@ namespace Vendita.HubMisureEE.Services
                 zipFiles = Directory.GetFiles(inFile, "*.zip");
                 xmlFiles = Directory.GetFiles(inFile, "*.xml");
                 allFiles = zipFiles.Union(xmlFiles).ToArray();
+
+
             }
             catch (DirectoryNotFoundException ex)
             {
-
-                logger.Info($"error1 \n{ex}\n");
+                HubLog.SaveLog2DB("Error", "ZipExtractorService.cs", ex.Message, stringConnect);
             }
             catch (IOException ex)
             {
-                logger.Info($"error2 \n{ex}\n");
+                HubLog.SaveLog2DB("Error", "ZipExtractorService.cs", ex.Message, stringConnect);
             }
 
 
@@ -57,7 +53,7 @@ namespace Vendita.HubMisureEE.Services
             }
             catch (SqlException ex)
             {
-                logger.Info($"error3 \n{ex}\n");
+                HubLog.SaveLog2DB("Error", "ZipExtractorService.cs", ex.Message, stringConnect);
             }
 
 
@@ -112,7 +108,7 @@ namespace Vendita.HubMisureEE.Services
                 }
                 catch (Exception ex)
                 {
-                    logger.Info($"error4 \n{ex}\n");
+                    HubLog.SaveLog2DB("Error", "ZipExtractorService.cs", ex.Message, stringConnect);
                 }
             }
             return flusso;
@@ -121,7 +117,6 @@ namespace Vendita.HubMisureEE.Services
 
         private static bool ControlloNomeFile(string FileName)
         {
-
             string[] parti = FileName.Split('_');
             string[] endName = parti[6].Split('.');
 
