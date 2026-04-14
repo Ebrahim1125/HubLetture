@@ -1,20 +1,23 @@
 ﻿using log4net;
 using System.Collections.Generic;
+using System.IO;
 using System.Xml;
 
 namespace Vendita.HubMisureEE.Services
 {
     public static class Importatori
     {
-        private static readonly ILog logger = LogManager.GetLogger(typeof(Importatori));
         public static void Importa(string folderSorgente, string folderLavoro, string stringaConnessione)
         {
             int IdFileXml = 0;
-            List<XmlDocument> flusso = ZipExtractorService.UnloadZip(folderSorgente, folderLavoro, stringaConnessione, out IdFileXml);
+            List<string> flusso = ZipExtractorService.UnloadZip(folderSorgente, folderLavoro, stringaConnessione, out IdFileXml);
 
-            foreach (XmlDocument Doc in flusso)
+            foreach (string Doc in flusso)
             {
-                CaricaXML.LoadXml(Doc, stringaConnessione, folderLavoro, IdFileXml++);
+                XmlDocument doc = new XmlDocument();
+               
+                doc.Load(Doc);      
+                CaricaXML.LoadXml(doc, stringaConnessione, folderLavoro, IdFileXml++);
             }
         }
     }

@@ -1,21 +1,14 @@
-﻿using log4net;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
-using Vendita.HubMisureEE.Services;
 
 namespace Vendita.HubMisureEE.Services
 {
     public class CaricaXML
     {
-        static readonly ILog logger = LogManager.GetLogger(typeof(Importatori));
         private static bool IsRettifica(string fileName)
         {
             string[] sigleRettifica =
@@ -27,7 +20,7 @@ namespace Vendita.HubMisureEE.Services
             };
             return sigleRettifica.Any(s => fileName.Contains(s));
         }
-        public static void LoadXml(XmlDocument Doc, string connectionString, string FolderLavoro, int IdFileXml)
+        public static void LoadXml(XmlDocument doc, string connectionString, string FolderLavoro, int IdFileXml)
         {
             try
             {
@@ -43,6 +36,8 @@ namespace Vendita.HubMisureEE.Services
 
                     string fileName = Path.GetFileName(Doc.BaseURI) ?? "";
                     fileName = fileName.ToUpper();
+
+
 
                     bool isPeriodica = !IsRettifica(fileName);
                     Type tipoDaUsare = isPeriodica ? typeof(Models.Periodico.FlussoMisure) : typeof(Models.Rettifica.FlussoMisure);
@@ -73,7 +68,7 @@ namespace Vendita.HubMisureEE.Services
                         }
                         else
                         {
-                            SaveFlusso.SaveFlusso2DB((Models.Periodico.FlussoMisure)FlussoGenerico, connessione, FolderLavoro, idFileXml, fileName);
+                            SaveFlusso.SaveFlusso2DB((Models.Rettifica.FlussoMisure)FlussoGenerico, connessione, FolderLavoro, idFileXml, fileName);
 
                         }
                         // Gestione tipo STANDARD
@@ -82,7 +77,7 @@ namespace Vendita.HubMisureEE.Services
             }
             catch (Exception ex)
             {
-                logger.Error($"error5 \n{ex}\n");
+                HubLog.SaveLog2DB("Error", "CaricaXml.cs", ex.Message, connectionString);
             }
         }
     }
