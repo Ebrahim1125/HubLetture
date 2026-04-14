@@ -506,6 +506,16 @@ namespace Vendita.HubMisureEE.Services
                 dr["ConsumoEriF2"] = (object)consumoRv2?.EriF2 ?? DBNull.Value;
                 dr["ConsumoEriF3"] = (object)consumoRv2?.EriF3 ?? DBNull.Value;
                 dr["ConsumoEaM"] = (object)consumoRv2?.EaM ?? DBNull.Value;
+                dr["ConsumoPotM"] = (object)consumoRv2?.PotM ?? DBNull.Value;
+                dr["ConsumoErcF1"] = (object)consumoRv2?.ErcF1 ?? DBNull.Value;
+                dr["ConsumoErcF2"] = (object)consumoRv2?.ErcF2 ?? DBNull.Value;
+                dr["ConsumoErcF3"] = (object)consumoRv2?.ErcF3 ?? DBNull.Value;
+                dr["ConsumoErcM"] = (object)consumoRv2?.EriF1 ?? DBNull.Value;
+                dr["ConsumoEriF1"] = (object)consumoRv2?.EriF1 ?? DBNull.Value;
+                dr["ConsumoEriF2"] = (object)consumoRv2?.EriF2 ?? DBNull.Value;
+                dr["ConsumoEriF3"] = (object)consumoRv2?.EriF3 ?? DBNull.Value;
+                dr["ConsumoEaM"] = (object)consumoRv2?.EaM ?? DBNull.Value;
+                dr["ConsumoEriM"] = (object)consumoRv2?.EriM ?? (object)consumoRv2Imm?.EriMint ?? DBNull.Value;
                 dr["ConsumoEriM"] = (object)consumoRv2?.EriM ?? (object)consumoRv2Imm?.EriMint ?? DBNull.Value;
                 dr["ConsumoEriM"] = (object)consumoRv2?.EriM ?? (object)consumoRv2Imm?.EriMint ?? DBNull.Value;
 

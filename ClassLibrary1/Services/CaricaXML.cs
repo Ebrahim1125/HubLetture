@@ -21,7 +21,7 @@ namespace Vendita.HubMisureEE.Services
 
             return sigleRettifica.Any(s => fileName.Contains(s));
         }
-        public static void LoadXml(XmlDocument Doc, string connectionString, string FolderLavoro, int IdFileXml)
+        public static void LoadXml(XmlDocument doc, string connectionString, string FolderLavoro, int IdFileXml)
         {
             if (Doc == null)
             {
@@ -42,6 +42,8 @@ namespace Vendita.HubMisureEE.Services
 
                     string fileName = Path.GetFileName(Doc.BaseURI) ?? string.Empty;
                     fileName = fileName.ToUpper();
+
+
 
                     bool isPeriodica = !IsRettifica(fileName);
                     Type tipoDaUsare = isPeriodica ? typeof(Models.Periodico.FlussoMisure) : typeof(Models.Rettifica.FlussoMisure);

@@ -1,4 +1,5 @@
-﻿using System;
+using log4net.Config;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -11,12 +12,14 @@ namespace Vendita.HubMisureEE.Services
 {
     public class ZipExtractorService
     {
-        public static List<XmlDocument> UnloadZip(string inFile, string outFile, string stringConnect, out int IdFIleXml)
+        public static List<string> UnloadZip(string inFile, string outFile, string stringConnect, out int IdFIleXml)
         {
             string[] zipFiles = null;
             string[] xmlFiles = null;
             string[] allFiles = null;
-            List<XmlDocument> flusso = new List<XmlDocument>();
+
+            List<string> flusso = new List<string>();
+
             try
             {
                 zipFiles = Directory.GetFiles(inFile, "*.zip");
@@ -27,15 +30,22 @@ namespace Vendita.HubMisureEE.Services
             }
             catch (DirectoryNotFoundException ex)
             {
-                HubLog.SaveLog2DB("Error", "ZipExtractorService.cs", ex.Message, stringConnect);
+                HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
             }
             catch (IOException ex)
             {
-                HubLog.SaveLog2DB("Error", "ZipExtractorService.cs", ex.Message, stringConnect);
+                HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
+            }catch (UnauthorizedAccessException ex)
+            {
+                HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
+            }catch( FileLoadException ex)
+            {
+                HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
             }
 
 
-            DataTable dt = new DataTable();
+            DataTable FileXml = new DataTable();
+
             IdFIleXml = 0;
             try
             {
@@ -43,9 +53,9 @@ namespace Vendita.HubMisureEE.Services
                 {
                     conn.Open();
 
-                    using (var da = new SqlDataAdapter("SELECT Id, NomeFile, Lavorato FROM FileXml", conn))
+                    using (var FileXmlDb = new SqlDataAdapter("SELECT Id, NomeFile, Lavorato FROM FileXml", conn))
                     {
-                        da.Fill(dt);
+                        FileXmlDb.Fill(FileXml);
                         IdFIleXml = dt.Rows.Count;
                     }
 
@@ -53,7 +63,7 @@ namespace Vendita.HubMisureEE.Services
             }
             catch (SqlException ex)
             {
-                HubLog.SaveLog2DB("Error", "ZipExtractorService.cs", ex.Message, stringConnect);
+                HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/Query FileXml", ex.Message, stringConnect);
             }
 
 
@@ -74,15 +84,13 @@ namespace Vendita.HubMisureEE.Services
 
                                 int fileCheck = dt.Select($"NomeFile = '{file.FilenameInZip}'").Count();
 
-                                if (file.FilenameInZip.EndsWith(".xml") && fileCheck == 0 && ControlloNomeFile(file.FilenameInZip))
+                                if (file.FilenameInZip.EndsWith(".xml") && ControlloNomeFile(Path.GetFileName(item))  && fileCheck == 0 )
                                 {
-                                    string extract = Path.Combine(outFile, file.FilenameInZip);
-
-                                    XmlDocument xmlDoc = new XmlDocument();
+                                                                      
                                     zipfile.ExtractFile(file, Path.Combine(outFile, file.FilenameInZip));
-                                    xmlDoc.Load(extract);
+                           
 
-                                    flusso.Add(xmlDoc);
+                                    flusso.Add(Path.GetFileName(item));
                                 }
                             }
                         }
@@ -90,16 +98,11 @@ namespace Vendita.HubMisureEE.Services
                     else if (item.EndsWith(".xml"))
                     {
                         int fileCheck = dt.Select($"NomeFile = '{Path.GetFileName(item)}'").Count();
-                        if (fileCheck == 0 && ControlloNomeFile(Path.GetFileName(item)))
+                        if (ControlloNomeFile(Path.GetFileName(item)) && fileCheck == 0))
                         {
                             File.Copy(item, Path.Combine(outFile, Path.GetFileName(item)));
-                            string extract = Path.Combine(outFile, Path.GetFileName(item));
-
-
-                            XmlDocument xmlDoc = new XmlDocument();
-
-                            xmlDoc.Load(extract);
-                            flusso.Add(xmlDoc);
+                                         
+                            flusso.Add(Path.GetFileName(item));
                         }
 
                     }
@@ -108,7 +111,7 @@ namespace Vendita.HubMisureEE.Services
                 }
                 catch (Exception ex)
                 {
-                    HubLog.SaveLog2DB("Error", "ZipExtractorService.cs", ex.Message, stringConnect);
+                    HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/Inserimento nomi nel lusso", ex.Message, stringConnect);
                 }
             }
             return flusso;
