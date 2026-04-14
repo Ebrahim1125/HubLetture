@@ -1,12 +1,10 @@
-﻿using log4net;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Xml;
 
 namespace Vendita.HubMisureEE.Services
 {
     public static class Importatori
     {
-        private static readonly ILog logger = LogManager.GetLogger(typeof(Importatori));
         public static void Importa(string folderSorgente, string folderLavoro, string stringaConnessione)
         {
             int IdFileXml = 0;
