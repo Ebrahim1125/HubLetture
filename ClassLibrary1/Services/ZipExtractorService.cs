@@ -28,6 +28,10 @@ namespace Vendita.HubMisureEE.Services
 
 
             }
+            catch (FileLoadException ex)
+            {
+                HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
+            }
             catch (DirectoryNotFoundException ex)
             {
                 HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
@@ -40,11 +44,6 @@ namespace Vendita.HubMisureEE.Services
             {
                 HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
             }
-            catch (FileLoadException ex)
-            {
-                HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
-            }
-
 
             DataTable FileXml = new DataTable();
 
