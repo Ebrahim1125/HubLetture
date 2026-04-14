@@ -121,18 +121,15 @@ namespace Vendita.HubMisureEE.Services
         {
             string[] parti = FileName.Split('_');
             string[] endName = parti[6].Split('.');
-            try
-            {
+            
                 if (endName[1] == "xml" && parti[0].Length == 11 && parti[1].Length == 11 && parti[2].Length == 6 && parti[4].Length == 14 && parti[5].Length == 7)
                 {
                     return true;
                 }
-               
-            }
-            catch (Exception ex) { 
-                HubLog.SaveLog2DB("warning", "ZipExtractorService.cs/ControlloNomeFile", ex.Message, "Server=localhost;Database=HubLetture;User Id=hubLetture;Password=DGS@2026;TrustServerCertificate=True");
-            }
-            return false;
+                else
+                {
+                    return false;
+                }
         }
     }
 }
