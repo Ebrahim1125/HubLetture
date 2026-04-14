@@ -35,10 +35,12 @@ namespace Vendita.HubMisureEE.Services
             catch (IOException ex)
             {
                 HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
-            }catch (UnauthorizedAccessException ex)
+            }
+            catch (UnauthorizedAccessException ex)
             {
                 HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
-            }catch( FileLoadException ex)
+            }
+            catch (FileLoadException ex)
             {
                 HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
             }
@@ -56,7 +58,7 @@ namespace Vendita.HubMisureEE.Services
                     using (var FileXmlDb = new SqlDataAdapter("SELECT Id, NomeFile, Lavorato FROM FileXml", conn))
                     {
                         FileXmlDb.Fill(FileXml);
-                        IdFIleXml = dt.Rows.Count;
+                        IdFIleXml = FileXml.Rows.Count;
                     }
 
                 }
@@ -82,13 +84,13 @@ namespace Vendita.HubMisureEE.Services
                             foreach (var file in zipfile.ReadCentralDir())
                             {
 
-                                int fileCheck = dt.Select($"NomeFile = '{file.FilenameInZip}'").Count();
+                                int fileCheck = FileXml.Select($"NomeFile = '{file.FilenameInZip}'").Count();
 
-                                if (file.FilenameInZip.EndsWith(".xml") && ControlloNomeFile(Path.GetFileName(item))  && fileCheck == 0 )
+                                if (file.FilenameInZip.EndsWith(".xml") && ControlloNomeFile(Path.GetFileName(item)) && fileCheck == 0)
                                 {
-                                                                      
+
                                     zipfile.ExtractFile(file, Path.Combine(outFile, file.FilenameInZip));
-                           
+
 
                                     flusso.Add(Path.GetFileName(item));
                                 }
@@ -97,11 +99,11 @@ namespace Vendita.HubMisureEE.Services
                     }
                     else if (item.EndsWith(".xml"))
                     {
-                        int fileCheck = dt.Select($"NomeFile = '{Path.GetFileName(item)}'").Count();
-                        if (ControlloNomeFile(Path.GetFileName(item)) && fileCheck == 0))
+                        int fileCheck = FileXml.Select($"NomeFile = '{Path.GetFileName(item)}'").Count();
+                        if (ControlloNomeFile(Path.GetFileName(item)) && fileCheck == 0)
                         {
                             File.Copy(item, Path.Combine(outFile, Path.GetFileName(item)));
-                                         
+
                             flusso.Add(Path.GetFileName(item));
                         }
 
