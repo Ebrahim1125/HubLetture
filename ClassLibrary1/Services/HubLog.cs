@@ -23,7 +23,6 @@ namespace Vendita.HubMisureEE.Services
         }
         public static void SaveLog2DB(string tipo, string dove, string messaggio, SqlConnection connessione)
         {
-
             string query = "Insert into HubLog(DataIns, Tipo, Dove, Messaggio) values(@DataIns, @Tipo, @Dove, @Messaggio)";
             SqlCommand com = new SqlCommand(query, connessione);
             com.Parameters.Add("@DataIns", SqlDbType.DateTime).Value = DateTime.Now;
@@ -32,15 +31,6 @@ namespace Vendita.HubMisureEE.Services
             com.Parameters.Add("@Messaggio", SqlDbType.VarChar).Value = messaggio;
 
             com.ExecuteNonQuery();
-
         }
-        //public static void SaveLog2Text(string tipo, string dove, string messaggio, string LogFolderPath)
-        //{
-        //    string header = $"[BEGIN LOGGING \n";
-        //    string footer = $"[END LOGGING \n";
-        //    string body = $"{DateTime.Now} -- {tipo} -- {dove} \n{messaggio}\n";
-
-        //    File.AppendAllText(LogFolderPath, $"{header} {body} {footer}");
-        //}
     }
 }

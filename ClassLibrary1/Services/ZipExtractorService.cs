@@ -1,4 +1,4 @@
-﻿using log4net.Config;
+using log4net.Config;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -7,8 +7,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Xml;
-
-[assembly: XmlConfigurator(Watch = true)]
 
 namespace Vendita.HubMisureEE.Services
 {
