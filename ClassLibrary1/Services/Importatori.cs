@@ -16,7 +16,8 @@ namespace Vendita.HubMisureEE.Services
             {
                 XmlDocument doc = new XmlDocument();
                
-                doc.Load(Doc);      
+                doc.Load(Path.Combine(folderLavoro, Doc));      
+                
                 CaricaXML.LoadXml(doc, stringaConnessione, folderLavoro, IdFileXml++);
             }
         }
