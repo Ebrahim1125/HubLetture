@@ -21,7 +21,7 @@ namespace Vendita.HubMisureEE.Services
 
             return sigleRettifica.Any(s => fileName.Contains(s));
         }
-        public static void LoadXml(XmlDocument doc, string connectionString, string FolderLavoro, int IdFileXml)
+        public static void LoadXml(XmlDocument Doc, string connectionString, string FolderLavoro, int IdFileXml)
         {
             if (Doc == null)
             {
