@@ -15,6 +15,7 @@ namespace Vendita.HubMisureEE.Services
             string[] zipFiles = null;
             string[] xmlFiles = null;
             string[] allFiles = null;
+            //int idFile;
 
             List<string> flusso = new List<string>();
 
