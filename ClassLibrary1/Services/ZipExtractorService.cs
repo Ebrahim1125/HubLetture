@@ -1,4 +1,3 @@
-using log4net.Config;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -6,7 +5,6 @@ using System.Data.SqlClient;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Xml;
 
 namespace Vendita.HubMisureEE.Services
 {
@@ -80,18 +78,18 @@ namespace Vendita.HubMisureEE.Services
                         using (ZipStorer zipfile = ZipStorer.Open(fileStream, FileAccess.Read))
                         {
 
-                            foreach (var file in zipfile.ReadCentralDir())
+                            foreach (ZipFileEntry file in zipfile.ReadCentralDir())
                             {
 
                                 int fileCheck = FileXml.Select($"NomeFile = '{file.FilenameInZip}'").Count();
 
-                                if (file.FilenameInZip.EndsWith(".xml") && ControlloNomeFile(Path.GetFileName(item)) && fileCheck == 0)
+                                if (file.FilenameInZip.EndsWith(".xml") && ControlloNomeFile(Path.GetFileName(file.FilenameInZip)) && fileCheck == 0)
                                 {
 
                                     zipfile.ExtractFile(file, Path.Combine(outFile, file.FilenameInZip));
 
 
-                                    flusso.Add(Path.GetFileName(item));
+                                    flusso.Add(Path.GetFileName(file.FilenameInZip));
                                 }
                             }
                         }
@@ -123,15 +121,15 @@ namespace Vendita.HubMisureEE.Services
         {
             string[] parti = FileName.Split('_');
             string[] endName = parti[6].Split('.');
-
-            if (endName[1] == "xml" && parti[0].Length == 11 && parti[1].Length == 11 && parti[2].Length == 6 && parti[4].Length == 14 && parti[5].Length == 7)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            
+                if (endName[1] == "xml" && parti[0].Length == 11 && parti[1].Length == 11 && parti[2].Length == 6 && parti[4].Length == 14 && parti[5].Length == 7)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
         }
     }
 }
