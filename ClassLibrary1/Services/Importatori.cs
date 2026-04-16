@@ -10,7 +10,7 @@ namespace Vendita.HubMisureEE.Services
         public static void Importa(string folderSorgente, string folderLavoro, string stringaConnessione)
         {
             int IdFileXml = 0;
-            List<string> flusso = ZipExtractorService.UnloadZip(folderSorgente, folderLavoro, stringaConnessione, out IdFileXml);
+            List<string> flusso = ZipExtractorService.UnloadZip(folderSorgente, folderLavoro, stringaConnessione, out IdLetture);
 
             foreach (string Doc in flusso)
             {
@@ -18,7 +18,7 @@ namespace Vendita.HubMisureEE.Services
                
                 doc.Load(Path.Combine(folderLavoro, Doc));      
                 
-                CaricaXML.LoadXml(doc, stringaConnessione, folderLavoro, IdFileXml++);
+                CaricaXML.LoadXml(doc, stringaConnessione, folderLavoro, IdLetture++);
             }
         }
     }

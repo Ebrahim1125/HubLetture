@@ -8,7 +8,7 @@ namespace Vendita.HubMisureEE.Services
 {
     internal class SaveFlusso
     {
-        public static void SaveFlusso2DB(Models.Periodico.FlussoMisure FlussoMisura, SqlConnection connessione, string FolderLavoro, int idFileXml, string fileName)
+        public static void SaveFlusso2DB(Models.Periodico.FlussoMisure FlussoMisura, SqlConnection connessione, string FolderLavoro, int idLetture, string fileName)
         {
             if (FlussoMisura == null || FlussoMisura.DatiPod == null || FlussoMisura.DatiPod.Length == 0)
                 return;
@@ -105,7 +105,7 @@ namespace Vendita.HubMisureEE.Services
             dtLetture.Columns.Add("ConsumoEriF6", typeof(decimal));
             dtLetture.Columns.Add("ConsumoEriM", typeof(decimal));
             dtLetture.Columns.Add("Valido", typeof(bool));
-            dtLetture.Columns.Add("IdFileXml", typeof(string));
+            dtLetture.Columns.Add("IdLetture", typeof(string));
             dtLetture.PrimaryKey = new DataColumn[] { dtLetture.Columns["ID"] };
 
             int IdLettura = 0;
@@ -121,7 +121,7 @@ namespace Vendita.HubMisureEE.Services
             DataTable QE;
             QE = new DataTable();
             QE.Columns.Add("Id", typeof(int)).AutoIncrement = true;
-            QE.Columns.Add("IdLet", typeof(int));
+            QE.Columns.Add("IdLetture", typeof(int));
             QE.Columns.Add("Tipo", typeof(string)).MaxLength = 105;
             for (int i = 1; i <= 100; i++)
             {
@@ -135,9 +135,9 @@ namespace Vendita.HubMisureEE.Services
             }
             QE.PrimaryKey = new DataColumn[] { QE.Columns["Id"] };
 
-            //scrittura per Tabella Xml
+            //scrittura per Tabella FileXml
             DataTable FileXml = new DataTable();
-            FileXml.Columns.Add("Id", typeof(int)).AutoIncrement = true;
+            FileXml.Columns.Add("IdLetture", typeof(int)).AutoIncrement = true;
             FileXml.Columns.Add("DataIns", typeof(DateTime));
             FileXml.Columns.Add("NomeFile", typeof(string)).MaxLength = 250;
             FileXml.Columns.Add("FileXml", typeof(string));
@@ -270,7 +270,7 @@ namespace Vendita.HubMisureEE.Services
                 dr["ConsumoErM"] = (d.GetType().GetProperty("ErM") != null) ? d?.ErM ?? DBNull.Value : DBNull.Value;
 
                 dr["Valido"] = true;
-                dr["IdFileXml"] = 0;
+                dr["IdLetture"] = 0;
 
                 dtLetture.Rows.Add(dr);
 
@@ -291,7 +291,7 @@ namespace Vendita.HubMisureEE.Services
                 Bulk2DB(FileXml, "FileXml", connessione);
             }
         }
-        public static void SaveFlusso2DB(Models.Rettifica.FlussoMisure FlussoRettifica, SqlConnection connessione, string FolderLavoro, int idFileXml, string fileName)
+        public static void SaveFlusso2DB(Models.Rettifica.FlussoMisure FlussoRettifica, SqlConnection connessione, string FolderLavoro, int idLetture, string fileName)
         {
             if (FlussoRettifica == null || FlussoRettifica.DatiPod == null || FlussoRettifica.DatiPod.Length == 0)
                 return;
@@ -388,9 +388,11 @@ namespace Vendita.HubMisureEE.Services
             dtLetture.Columns.Add("ConsumoEriF6", typeof(decimal));
             dtLetture.Columns.Add("ConsumoEriM", typeof(decimal));
             dtLetture.Columns.Add("Valido", typeof(bool));
-            dtLetture.Columns.Add("IdFileXml", typeof(string));
+            dtLetture.Columns.Add("IdLetture", typeof(string));
             dtLetture.PrimaryKey = new DataColumn[] { dtLetture.Columns["ID"] };
 
+
+            //va cambiato IdLettura?
             int IdLettura = 0;
 
             string queryId = @"SELECT IDENT_CURRENT('Letture') AS IdLettura ";
@@ -405,7 +407,7 @@ namespace Vendita.HubMisureEE.Services
             DataTable QE;
             QE = new DataTable();
             QE.Columns.Add("Id", typeof(int)).AutoIncrement = true;
-            QE.Columns.Add("IdLet", typeof(int));
+            QE.Columns.Add("IdLetture", typeof(int));
             QE.Columns.Add("Tipo", typeof(string)).MaxLength = 105;
             for (int i = 1; i <= 100; i++)
             {
@@ -422,13 +424,13 @@ namespace Vendita.HubMisureEE.Services
 
             //scrittura per Tabella Xml
             DataTable FileXml = new DataTable();
-            FileXml.Columns.Add("Id", typeof(int)).AutoIncrement = true;
+            FileXml.Columns.Add("IdLetture", typeof(int)).AutoIncrement = true;
             FileXml.Columns.Add("DataIns", typeof(DateTime));
             FileXml.Columns.Add("NomeFile", typeof(string)).MaxLength = 250;
             FileXml.Columns.Add("FileXml", typeof(string));
             FileXml.Columns.Add("Lavorato", typeof(bool));
 
-            FileXml.PrimaryKey = new DataColumn[] { FileXml.Columns["Id"] };
+            //FileXml.PrimaryKey = new DataColumn[] { FileXml.Columns["Id"] };
 
             DataRow drFile = FileXml.NewRow();
             drFile["DataIns"] = DateTime.Now;
@@ -547,7 +549,7 @@ namespace Vendita.HubMisureEE.Services
                 dr["ConsumoEriM"] = (object)consumoRv2?.EriM ?? (object)consumoRv2Imm?.EriMint ?? DBNull.Value;
 
                 dr["Valido"] = true;
-                dr["IdFileXml"] = 0;
+                dr["IdLetture"] = 0;
 
                 dtLetture.Rows.Add(dr);
 
@@ -595,14 +597,14 @@ namespace Vendita.HubMisureEE.Services
             }
         }
 
-        private static void MappaQuartini(DataTable dt, int idLet, string tipo, IEnumerable<object> listaQuartini)
+        private static void MappaQuartini(DataTable dt, int IdLetture, string tipo, IEnumerable<object> listaQuartini)
         {
             if (listaQuartini == null) return;
 
             foreach (var e in listaQuartini)
             {
                 DataRow row = dt.NewRow();
-                row["IdLet"] = idLet;
+                row["IdLetture"] = IdLetture;
                 row["Tipo"] = tipo;
 
                 for (int i = 1; i <= 96; i++)

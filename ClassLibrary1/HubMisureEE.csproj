@@ -107,6 +107,7 @@
     <Compile Include="Models\FlussoMisurePeriodico.cs" />
     <Compile Include="Models\FlussoMisureRettifica.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\ControlloRettifica.cs" />
     <Compile Include="Services\HubLog.cs" />
     <Compile Include="Services\Importatori.cs" />
     <Compile Include="Services\CaricaXML.cs" />

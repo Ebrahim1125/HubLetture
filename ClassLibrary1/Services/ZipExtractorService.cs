@@ -10,7 +10,7 @@ namespace Vendita.HubMisureEE.Services
 {
     public class ZipExtractorService
     {
-        public static List<string> UnloadZip(string inFile, string outFile, string stringConnect, out int IdFIleXml)
+        public static List<string> UnloadZip(string inFile, string outFile, string stringConnect, out int IdLetture)
         {
             string[] zipFiles = null;
             string[] xmlFiles = null;
@@ -46,7 +46,7 @@ namespace Vendita.HubMisureEE.Services
 
             DataTable FileXml = new DataTable();
 
-            IdFIleXml = 0;
+            IdLetture = 0;
             try
             {
                 using (SqlConnection conn = new SqlConnection(stringConnect))
@@ -56,7 +56,7 @@ namespace Vendita.HubMisureEE.Services
                     using (var FileXmlDb = new SqlDataAdapter("SELECT Id, NomeFile, Lavorato FROM FileXml", conn))
                     {
                         FileXmlDb.Fill(FileXml);
-                        IdFIleXml = FileXml.Rows.Count;
+                        IdLetture = FileXml.Rows.Count;
                     }
 
                 }
