@@ -65,15 +65,12 @@ namespace Vendita.HubMisureEE.Services
                 HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/Query FileXml", ex.Message, stringConnect);
             }
 
-
             foreach (string item in allFiles)
             {
                 try
                 {
                     if (item.EndsWith(".zip"))
                     {
-
-
                         using (FileStream fileStream = new FileStream(item, FileMode.Open, FileAccess.Read))
                         using (ZipStorer zipfile = ZipStorer.Open(fileStream, FileAccess.Read))
                         {
@@ -106,7 +103,6 @@ namespace Vendita.HubMisureEE.Services
 
                     }
 
-
                 }
                 catch (Exception ex)
                 {
@@ -116,20 +112,19 @@ namespace Vendita.HubMisureEE.Services
             return flusso;
         }
 
-
         private static bool ControlloNomeFile(string FileName)
         {
             string[] parti = FileName.Split('_');
             string[] endName = parti[6].Split('.');
-            
-                if (endName[1] == "xml" && parti[0].Length == 11 && parti[1].Length == 11 && parti[2].Length == 6 && parti[4].Length == 14 && parti[5].Length == 7)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+
+            if (endName[1] == "xml" && parti[0].Length == 11 && parti[1].Length == 11 && parti[2].Length == 6 && parti[4].Length == 14 && parti[5].Length == 7)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }
