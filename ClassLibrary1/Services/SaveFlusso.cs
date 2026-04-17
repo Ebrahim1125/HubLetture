@@ -151,7 +151,7 @@ namespace Vendita.HubMisureEE.Services
             DataRow drFile = FileXml.NewRow();
             drFile["DataIns"] = DateTime.Now;
             drFile["NomeFile"] = fileName;
-            drFile["FileXml"] = File.ReadAllText(Path.Combine(FolderLavoro, fileName));
+            drFile["FileXml"] = "";
             drFile["Lavorato"] = true;
 
             FileXml.Rows.Add(drFile);
@@ -461,7 +461,7 @@ namespace Vendita.HubMisureEE.Services
             DataRow drFile = FileXml.NewRow();
             drFile["DataIns"] = DateTime.Now;
             drFile["NomeFile"] = fileName;
-            drFile["FileXml"] = File.ReadAllText(Path.Combine(FolderLavoro, fileName));
+            drFile["FileXml"] = "";
             drFile["Lavorato"] = true;
 
             FileXml.Rows.Add(drFile);
