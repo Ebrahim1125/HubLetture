@@ -118,7 +118,7 @@ namespace Vendita.HubMisureEE.Services
         private static bool ControlloNomeFile(string FileName, out string TimeStamp)
         {
             string[] parti = FileName.Split('_');
-            TimeStamp = parti[5];
+            TimeStamp = parti[4];
             string[] endName = parti[6].Split('.');
 
             if (endName[1].ToLower() == "xml" && parti[0].Length == 11 && parti[1].Length == 11 && parti[2].Length == 6 && parti[4].Length == 14 && parti[5].Length == 7)
