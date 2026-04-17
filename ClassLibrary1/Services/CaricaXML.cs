@@ -21,7 +21,7 @@ namespace Vendita.HubMisureEE.Services
 
             return sigleRettifica.Any(s => fileName.Contains(s));
         }
-        public static void LoadXml(XmlDocument Doc, string connectionString, string FolderLavoro, int IdLetture)
+        public static void LoadXml(XmlDocument Doc, string connectionString, string FolderLavoro, int IdLetture, string TimeStamp)
         {
             if (Doc == null)
             {
@@ -75,11 +75,11 @@ namespace Vendita.HubMisureEE.Services
                     {
                         if (isPeriodica)
                         {
-                            SaveFlusso.SaveFlusso2DB((Models.Periodico.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdLetture, fileName);
+                            SaveFlusso.SaveFlusso2DB((Models.Periodico.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdLetture, fileName, TimeStamp);
                         }
                         else
                         {
-                            SaveFlusso.SaveFlusso2DB((Models.Rettifica.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdLetture, fileName);
+                            SaveFlusso.SaveFlusso2DB((Models.Rettifica.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdLetture, fileName, TimeStamp);
                         }
                     }
                     catch (Exception ex)
