@@ -7,7 +7,7 @@ namespace Vendita.HubMisureEE.Services
 
     internal class ControllaRettifica
     {
-        public static bool IsRettificato(SqlConnection connessione, string PIvaUtente, string PIvaDistributore, string Pod, string DataMisura)
+        public static bool IsRettificato(SqlConnection connessione, string PIvaUtente, string PIvaDistributore, string Pod, DateTime DataMisura)
         {
             int Id = 0;
             int IdFileXml = 0;

@@ -477,6 +477,8 @@ namespace Vendita.HubMisureEE.Services
             string piVaDistributore = "";
             string codContrDisp = "";
             string codiceFlusso = FlussoRettifica.CodFlusso.ToString();
+            string nPod= "";
+            DateTime dataMisura= new DateTime();
 
             for (int i = 0; i < FlussoRettifica.IdentificativiFlusso.Items.Length; i++)
             {
@@ -488,6 +490,7 @@ namespace Vendita.HubMisureEE.Services
             }
 
 
+            
             // 2. CICLO POD (Riempimento DataRow)
             for (int j = 0; j < FlussoRettifica.DatiPod.Length; j++)
             {
@@ -520,8 +523,10 @@ namespace Vendita.HubMisureEE.Services
                 dr["PIvaDistributore"] = piVaDistributore ?? "";
                 dr["CodContrDisp"] = codContrDisp ?? "";
                 dr["Pod"] = pod.Pod ?? "";
+                nPod = pod.Pod ?? "";
                 dr["MeseAnno"] = ParseMonthYearOrDbNull(pod.MeseAnno);
                 dr["DataMisura"] = ParseDateOrDbNull(pod.DataMisura);
+                dataMisura = (DateTime)ParseDateOrDbNull(pod.DataMisura);
                 dr["DataRilevazione"] = ParseDateOrDbNull(pod.DataRilevazione);
                 dr["DataPrest"] = ParseDateOrDbNull(pod.DataPrest);
                 dr["TipoRettifica"] = tipoRettifica.Length > 1 ? tipoRettifica.Substring(0, 1) : tipoRettifica;
@@ -624,11 +629,13 @@ namespace Vendita.HubMisureEE.Services
                     MappaQuartini(QE, IdLettura, "Erc", rfov2.Erc);
                     MappaQuartini(QE, IdLettura, "Eri", rfov2.Eri);
                 }
+                
             }
             //Scrittura col Bulk
             Bulk2DB(dtLetture, "Letture", connessione);
             Bulk2DB(QE, "Curve", connessione);
             Bulk2DB(FileXml, "FileXml", connessione);
+            ControllaRettifica.IsRettificato(connessione, piVaUtente, piVaDistributore, nPod, dataMisura);
         }
 
         private static void MappaQuartini(DataTable dt, int IdLetture, string tipo, IEnumerable<object> listaQuartini)

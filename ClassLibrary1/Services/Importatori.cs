@@ -9,7 +9,7 @@ namespace Vendita.HubMisureEE.Services
     {
         public static void Importa(string folderSorgente, string folderLavoro, string stringaConnessione)
         {
-            int IdFileXml = 0;
+            int IdLetture = 0;
             List<string> flusso = ZipExtractorService.UnloadZip(folderSorgente, folderLavoro, stringaConnessione, out IdLetture);
 
             foreach (string Doc in flusso)
