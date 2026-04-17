@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 using System.Globalization;
 using System.Reflection;
 
@@ -9,7 +10,7 @@ namespace Vendita.HubMisureEE.Services
 {
     internal class SaveFlusso
     {
-        public static void SaveFlusso2DB(Models.Periodico.FlussoMisure FlussoMisura, SqlConnection connessione, string FolderLavoro, int idFileXml, string fileName)
+        public static void SaveFlusso2DB(Models.Periodico.FlussoMisure FlussoMisura, SqlConnection connessione, string FolderLavoro, int idLetture, string fileName)
         {
             if (FlussoMisura == null || FlussoMisura.DatiPod == null || FlussoMisura.DatiPod.Length == 0)
                 return;
@@ -106,22 +107,26 @@ namespace Vendita.HubMisureEE.Services
             dtLetture.Columns.Add("ConsumoEriF6", typeof(decimal));
             dtLetture.Columns.Add("ConsumoEriM", typeof(decimal));
             dtLetture.Columns.Add("Valido", typeof(bool));
-            dtLetture.Columns.Add("IdFileXml", typeof(int));
-            dtLetture.PrimaryKey = new DataColumn[] { dtLetture.Columns["Id"] };
+            dtLetture.Columns.Add("IdLetture", typeof(int));
+            dtLetture.PrimaryKey = new DataColumn[] { dtLetture.Columns["ID"] };
 
-            string piVaUtente = "";
-            string piVaDistributore = "";
-            string codContrDisp = "";
-            string codiceFlusso = FlussoMisura.CodFlusso.ToString();
+            int IdLettura = 0;
+            string queryId = @"SELECT IDENT_CURRENT('Letture') AS IdLettura ";
 
+            using (SqlCommand cmd = new SqlCommand(queryId, connessione))
+            {
+                object result = cmd.ExecuteScalar();
+                IdLettura = Convert.ToInt32(result);
+            }
+
+            //Quartini
             DataTable QE;
             QE = new DataTable();
             QE.Columns.Add("Id", typeof(int)).AutoIncrement = true;
-            QE.Columns.Add("IdLet", typeof(int));
+            QE.Columns.Add("IdLetture", typeof(int));
             QE.Columns.Add("Tipo", typeof(string)).MaxLength = 105;
             for (int i = 1; i <= 100; i++)
             {
-
                 DataColumn col = new DataColumn($"E{i}", typeof(decimal))
                 {
                     DefaultValue = 0m,
@@ -130,18 +135,30 @@ namespace Vendita.HubMisureEE.Services
 
                 QE.Columns.Add(col);
             }
-
             QE.PrimaryKey = new DataColumn[] { QE.Columns["Id"] };
-            int IdLettura = 0;
 
-            string queryId = @"SELECT IDENT_CURRENT('Letture') AS IdLet";
+            //scrittura per Tabella FileXml
+            DataTable FileXml = new DataTable();
+            FileXml.Columns.Add("IdLetture", typeof(int)).AutoIncrement = true;
+            FileXml.Columns.Add("DataIns", typeof(DateTime));
+            FileXml.Columns.Add("NomeFile", typeof(string)).MaxLength = 250;
+            FileXml.Columns.Add("FileXml", typeof(string));
+            FileXml.Columns.Add("Lavorato", typeof(bool));
 
-            using (SqlCommand cmd = new SqlCommand(queryId, connessione))
-            {
-                object result = cmd.ExecuteScalar();
-                IdLettura = Convert.ToInt32(result);
-            }
+            FileXml.PrimaryKey = new DataColumn[] { FileXml.Columns["Id"] };
 
+            DataRow drFile = FileXml.NewRow();
+            drFile["DataIns"] = DateTime.Now;
+            drFile["NomeFile"] = fileName;
+            drFile["FileXml"] = File.ReadAllText(Path.Combine(FolderLavoro, fileName));
+            drFile["Lavorato"] = true;
+
+            FileXml.Rows.Add(drFile);
+
+            string piVaUtente = "";
+            string piVaDistributore = "";
+            string codContrDisp = "";
+            string codiceFlusso = FlussoMisura.CodFlusso.ToString();
 
             for (int i = 0; i < FlussoMisura.IdentificativiFlusso.Items.Length; i++)
             {
@@ -257,7 +274,7 @@ namespace Vendita.HubMisureEE.Services
                 dr["ConsumoErM"] = (d.GetType().GetProperty("ErM") != null) ? d?.ErM ?? DBNull.Value : DBNull.Value;
 
                 dr["Valido"] = true;
-                dr["IdFileXml"] = idFileXml;
+                dr["IdLetture"] = idFileXml;
 
                 dtLetture.Rows.Add(dr);
 
@@ -305,8 +322,9 @@ namespace Vendita.HubMisureEE.Services
             //Scrittura col bulk
             Bulk2DB(QE, "Curve", connessione);
             Bulk2DB(dtLetture, "Letture", connessione);
+            Bulk2DB(FileXml, "FileXml", connessione);
         }
-        public static void SaveFlusso2DB(Models.Rettifica.FlussoMisure FlussoRettifica, SqlConnection connessione, string FolderLavoro, int idFileXml, string fileName)
+        public static void SaveFlusso2DB(Models.Rettifica.FlussoMisure FlussoRettifica, SqlConnection connessione, string FolderLavoro, int idLetture, string fileName)
         {
             if (FlussoRettifica == null || FlussoRettifica.DatiPod == null || FlussoRettifica.DatiPod.Length == 0)
                 return;
@@ -403,20 +421,26 @@ namespace Vendita.HubMisureEE.Services
             dtLetture.Columns.Add("ConsumoEriF6", typeof(decimal));
             dtLetture.Columns.Add("ConsumoEriM", typeof(decimal));
             dtLetture.Columns.Add("Valido", typeof(bool));
-            dtLetture.Columns.Add("IdFileXml", typeof(string));
-            dtLetture.PrimaryKey = new DataColumn[] { dtLetture.Columns["Id"] };
+            dtLetture.Columns.Add("IdLetture", typeof(string));
+            dtLetture.PrimaryKey = new DataColumn[] { dtLetture.Columns["ID"] };
 
-            string piVaUtente = "";
-            string piVaDistributore = "";
-            string codContrDisp = "";
-            string codiceFlusso = FlussoRettifica.CodFlusso.ToString();
 
+            //va cambiato IdLettura?
+            int IdLettura = 0;
+
+            string queryId = @"SELECT IDENT_CURRENT('Letture') AS IdLettura ";
+
+            using (SqlCommand cmd = new SqlCommand(queryId, connessione))
+            {
+                object result = cmd.ExecuteScalar();
+                IdLettura = Convert.ToInt32(result);
+            }
 
             // 4. tabella CURVE
             DataTable QE;
             QE = new DataTable();
             QE.Columns.Add("Id", typeof(int)).AutoIncrement = true;
-            QE.Columns.Add("IdLet", typeof(int));
+            QE.Columns.Add("IdLetture", typeof(int));
             QE.Columns.Add("Tipo", typeof(string)).MaxLength = 105;
             for (int i = 1; i <= 100; i++)
             {
@@ -430,24 +454,29 @@ namespace Vendita.HubMisureEE.Services
             }
 
             QE.PrimaryKey = new DataColumn[] { QE.Columns["Id"] };
-            int IdLettura = 0;
 
-            //Tabella FileXml
+            //scrittura per Tabella Xml
             DataTable FileXml = new DataTable();
-            FileXml.Columns.Add("Id", typeof(int)).AutoIncrement = true;
+            FileXml.Columns.Add("IdLetture", typeof(int)).AutoIncrement = true;
             FileXml.Columns.Add("DataIns", typeof(DateTime));
             FileXml.Columns.Add("NomeFile", typeof(string)).MaxLength = 250;
             FileXml.Columns.Add("FileXml", typeof(string));
             FileXml.Columns.Add("Lavorato", typeof(bool));
-            FileXml.PrimaryKey = new DataColumn[] { FileXml.Columns["Id"] };
 
-            string queryId = @"SELECT IDENT_CURRENT('Letture') AS IdLet";
+            //FileXml.PrimaryKey = new DataColumn[] { FileXml.Columns["Id"] };
 
-            using (SqlCommand cmd = new SqlCommand(queryId, connessione))
-            {
-                object result = cmd.ExecuteScalar();
-                IdLettura = Convert.ToInt32(result);
-            }
+            DataRow drFile = FileXml.NewRow();
+            drFile["DataIns"] = DateTime.Now;
+            drFile["NomeFile"] = fileName;
+            drFile["FileXml"] = File.ReadAllText(Path.Combine(FolderLavoro, fileName));
+            drFile["Lavorato"] = true;
+
+            FileXml.Rows.Add(drFile);
+
+            string piVaUtente = "";
+            string piVaDistributore = "";
+            string codContrDisp = "";
+            string codiceFlusso = FlussoRettifica.CodFlusso.ToString();
 
             for (int i = 0; i < FlussoRettifica.IdentificativiFlusso.Items.Length; i++)
             {
@@ -555,7 +584,7 @@ namespace Vendita.HubMisureEE.Services
                 dr["ConsumoEriM"] = (object)consumoRv2?.EriM?.Replace(",", ".") ?? (object)consumoRv2Imm?.EriMint?.Replace(",", ".") ?? DBNull.Value;
 
                 dr["Valido"] = true;
-                dr["IdFileXml"] = 0;
+                dr["IdLetture"] = 0;
 
                 dtLetture.Rows.Add(dr);
 
@@ -599,9 +628,10 @@ namespace Vendita.HubMisureEE.Services
             //Scrittura col Bulk
             Bulk2DB(dtLetture, "Letture", connessione);
             Bulk2DB(QE, "Curve", connessione);
+            Bulk2DB(FileXml, "FileXml", connessione);
         }
 
-        private static void MappaQuartini(DataTable dt, int idLet, string tipo, IEnumerable<object> listaQuartini)
+        private static void MappaQuartini(DataTable dt, int IdLetture, string tipo, IEnumerable<object> listaQuartini)
         {
             if (listaQuartini == null) return;
 
@@ -611,7 +641,7 @@ namespace Vendita.HubMisureEE.Services
                     continue;
 
                 DataRow row = dt.NewRow();
-                row["IdLet"] = idLet;
+                row["IdLetture"] = IdLetture;
                 row["Tipo"] = tipo;
 
                 for (int i = 1; i <= 96; i++)
