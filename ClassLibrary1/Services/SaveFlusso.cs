@@ -274,7 +274,7 @@ namespace Vendita.HubMisureEE.Services
                 dr["ConsumoErM"] = (d.GetType().GetProperty("ErM") != null) ? d?.ErM ?? DBNull.Value : DBNull.Value;
 
                 dr["Valido"] = true;
-                dr["IdLetture"] = idFileXml;
+                dr["IdLetture"] = idLetture;
 
                 dtLetture.Rows.Add(dr);
 
