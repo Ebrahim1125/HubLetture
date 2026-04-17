@@ -53,7 +53,7 @@ namespace Vendita.HubMisureEE.Services
                 {
                     conn.Open();
 
-                    using (var FileXmlDb = new SqlDataAdapter("SELECT Id, NomeFile, Lavorato FROM FileXml", conn))
+                    using (var FileXmlDb = new SqlDataAdapter("SELECT IdLetture,, NomeFile, Lavorato FROM FileXml", conn))
                     {
                         FileXmlDb.Fill(FileXml);
                         IdLetture = FileXml.Rows.Count;
