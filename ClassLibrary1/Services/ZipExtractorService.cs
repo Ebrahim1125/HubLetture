@@ -10,11 +10,12 @@ namespace Vendita.HubMisureEE.Services
 {
     public class ZipExtractorService
     {
-        public static List<string> UnloadZip(string inFile, string outFile, string stringConnect, out int IdLetture)
+        public static List<string> UnloadZip(string inFile, string outFile, string stringConnect, out int IdLetture, out string TimeStamp)
         {
             string[] zipFiles = null;
             string[] xmlFiles = null;
             string[] allFiles = null;
+            TimeStamp = "";
             //int idFile;
 
             List<string> flusso = new List<string>();
@@ -53,7 +54,7 @@ namespace Vendita.HubMisureEE.Services
                 {
                     conn.Open();
 
-                    using (var FileXmlDb = new SqlDataAdapter("SELECT IdLetture,, NomeFile, Lavorato FROM FileXml", conn))
+                    using (var FileXmlDb = new SqlDataAdapter("SELECT IdLetture, NomeFile, Lavorato FROM FileXml", conn))
                     {
                         FileXmlDb.Fill(FileXml);
                         IdLetture = FileXml.Rows.Count;
@@ -70,6 +71,7 @@ namespace Vendita.HubMisureEE.Services
             {
                 try
                 {
+
                     if (item.EndsWith(".zip"))
                     {
                         using (FileStream fileStream = new FileStream(item, FileMode.Open, FileAccess.Read))
@@ -81,7 +83,7 @@ namespace Vendita.HubMisureEE.Services
 
                                 int fileCheck = FileXml.Select($"NomeFile = '{file.FilenameInZip}'").Count();
 
-                                if (file.FilenameInZip.EndsWith(".xml") && ControlloNomeFile(Path.GetFileName(file.FilenameInZip)) && fileCheck == 0)
+                                if (file.FilenameInZip.ToLower().EndsWith(".xml") && ControlloNomeFile(Path.GetFileName(file.FilenameInZip), out TimeStamp) && fileCheck == 0)
                                 {
 
                                     zipfile.ExtractFile(file, Path.Combine(outFile, file.FilenameInZip));
@@ -95,7 +97,7 @@ namespace Vendita.HubMisureEE.Services
                     else if (item.EndsWith(".xml"))
                     {
                         int fileCheck = FileXml.Select($"NomeFile = '{Path.GetFileName(item)}'").Count();
-                        if (ControlloNomeFile(Path.GetFileName(item)) && fileCheck == 0)
+                        if (ControlloNomeFile(Path.GetFileName(item), out TimeStamp) && fileCheck == 0)
                         {
                             File.Copy(item, Path.Combine(outFile, Path.GetFileName(item)));
 
@@ -113,12 +115,13 @@ namespace Vendita.HubMisureEE.Services
             return flusso;
         }
 
-        private static bool ControlloNomeFile(string FileName)
+        private static bool ControlloNomeFile(string FileName, out string TimeStamp)
         {
             string[] parti = FileName.Split('_');
+            TimeStamp = parti[5];
             string[] endName = parti[6].Split('.');
 
-            if (endName[1] == "xml" && parti[0].Length == 11 && parti[1].Length == 11 && parti[2].Length == 6 && parti[4].Length == 14 && parti[5].Length == 7)
+            if (endName[1].ToLower() == "xml" && parti[0].Length == 11 && parti[1].Length == 11 && parti[2].Length == 6 && parti[4].Length == 14 && parti[5].Length == 7)
             {
                 return true;
             }

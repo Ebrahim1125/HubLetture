@@ -13,7 +13,7 @@ namespace Vendita.HubMisureEE.Services
             int IdFileXml = 0;
 
 
-            string query = "SELECT Id, IdFileXml FROM Letture WHERE(PIvaUtente=@PIvaUtente, PIvaDistributore=@PIvaDistributore, Pod=@Pod, DataMisura=@DataMisura)";
+            string query = "SELECT  IdLetture FROM Letture WHERE(PIvaUtente=@PIvaUtente AND PIvaDistributore=@PIvaDistributore AND Pod=@Pod AND DataMisura=@DataMisura)";
             using (SqlCommand com = new SqlCommand(query, connessione))
             {
 
@@ -21,15 +21,15 @@ namespace Vendita.HubMisureEE.Services
                 com.Parameters.Add("@PIvaDistributore", SqlDbType.VarChar).Value = PIvaDistributore;
                 com.Parameters.Add("@Pod", SqlDbType.VarChar).Value = Pod;
                 com.Parameters.Add("@DataMisura", SqlDbType.DateTime).Value = DataMisura;
-                com.ExecuteNonQuery();
-                Id = (int)com.ExecuteScalar();
+                //com.ExecuteNonQuery();
+
                 IdFileXml = (int)com.ExecuteScalar();
             }
-            if (Id != 0)
+            if (IdFileXml != 0)
             {
                 Rettifica("Letture", IdFileXml, connessione);
                 Rettifica("FileXml", IdFileXml, connessione);
-                Rettifica("Curve", Id, connessione);
+                Rettifica("Curve", IdFileXml, connessione);
                 return true;
             }
 
@@ -42,7 +42,7 @@ namespace Vendita.HubMisureEE.Services
 
 
 
-            string query = $"UPDATE {NomeTabella} SET Rettificato=@Rettificato WHERE IdLetture=@Id";
+            string query = $"UPDATE {NomeTabella} SET Rettificato=@Rettificato WHERE IdLetture=@IdLetture";
             using (SqlCommand com = new SqlCommand(query, connessione))
             {
 
