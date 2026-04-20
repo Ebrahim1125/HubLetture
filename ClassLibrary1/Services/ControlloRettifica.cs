@@ -7,11 +7,10 @@ namespace Vendita.HubMisureEE.Services
 
     internal class ControllaRettifica
     {
-        public static bool IsRettificato(SqlConnection connessione, string PIvaUtente, string PIvaDistributore, string Pod, DateTime DataMisura)
+        public static bool IsRettificato(SqlConnection connessione, string PIvaUtente, string PIvaDistributore, string Pod, DateTime DataMisure)
         {
-            int Id = 0;
-            int IdFileXml = 0;
 
+            int IdFileXml = 0;
 
             string query = "SELECT  IdLetture FROM Letture WHERE(PIvaUtente=@PIvaUtente AND PIvaDistributore=@PIvaDistributore AND Pod=@Pod AND DataMisura=@DataMisura)";
             using (SqlCommand com = new SqlCommand(query, connessione))
@@ -20,10 +19,10 @@ namespace Vendita.HubMisureEE.Services
                 com.Parameters.Add("@PIvaUtente", SqlDbType.VarChar).Value = PIvaUtente;
                 com.Parameters.Add("@PIvaDistributore", SqlDbType.VarChar).Value = PIvaDistributore;
                 com.Parameters.Add("@Pod", SqlDbType.VarChar).Value = Pod;
-                com.Parameters.Add("@DataMisura", SqlDbType.DateTime).Value = DataMisura;
-                //com.ExecuteNonQuery();
+                com.Parameters.Add("@DataMisura", SqlDbType.DateTime).Value = DataMisure;
+                IdFileXml = com.ExecuteNonQuery();
 
-                IdFileXml = (int)com.ExecuteScalar();
+                //(int)com.ExecuteScalar();
             }
             if (IdFileXml != 0)
             {

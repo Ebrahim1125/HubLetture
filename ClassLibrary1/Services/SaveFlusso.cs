@@ -10,11 +10,13 @@ namespace Vendita.HubMisureEE.Services
 {
     internal class SaveFlusso
     {
-        public static void SaveFlusso2DB(Models.Periodico.FlussoMisure FlussoMisura, SqlConnection connessione, string FolderLavoro, int idLetture, string fileName, string TimeStamp)
+        public static void SaveFlusso2DB(Models.Periodico.FlussoMisure FlussoMisura, SqlConnection connessione, string FolderLavoro, int idLetture, string fileName)
         {
             if (FlussoMisura == null || FlussoMisura.DatiPod == null || FlussoMisura.DatiPod.Length == 0)
                 return;
 
+            string[] arrName = fileName.Split('_');
+            string timeStamp = arrName[4];
             // 1. PREPARAZIONE DATATABLE
             DataTable dtLetture = new DataTable();
 
@@ -148,14 +150,6 @@ namespace Vendita.HubMisureEE.Services
 
             FileXml.PrimaryKey = new DataColumn[] { FileXml.Columns["Id"] };
 
-            DataRow drFile = FileXml.NewRow();
-            drFile["DataIns"] = DateTime.Now;
-            drFile["NomeFile"] = fileName;
-            drFile["FileXml"] = "";
-            drFile["Lavorato"] = true;
-
-            FileXml.Rows.Add(drFile);
-
             string piVaUtente = "";
             string piVaDistributore = "";
             string codContrDisp = "";
@@ -190,9 +184,9 @@ namespace Vendita.HubMisureEE.Services
                 dr["CodContrDisp"] = codContrDisp ?? "";
                 dr["Pod"] = pod.Pod ?? "";
                 dr["MeseAnno"] = ParseMonthYearOrDbNull(pod.MeseAnno);
-                int dataMisuraStr = Convert.ToInt32($"{d?.Ea[0].Value}");
-                dr["DataMisura"] = ParseDataMisure(pod.MeseAnno, dataMisuraStr);
-                dr["DataPrest"] = ParseDateOrDbNull(pod.DataPrest);
+
+                dr["DataMisura"] = ParseDateOrDbNull(pod?.DataMisura) ?? ParseDataMisure(pod.MeseAnno, Convert.ToInt32($"{d?.Ea[0].Value}"));
+                dr["DataPrest"] = ParseDateOrDbNull(pod?.DataPrest);
                 dr["CodPrat_SII"] = pod.CodPrat_SII ?? "";
 
                 //Campi Rettifica (forse si possono togliere qui)
@@ -208,9 +202,10 @@ namespace Vendita.HubMisureEE.Services
                 dr["Tensione"] = (object)pod.DatiPdp?.Tensione ?? DBNull.Value;
                 dr["Forfait"] = (object)pod.DatiPdp?.Forfait ?? DBNull.Value;
                 dr["GruppoMis"] = (object)pod.DatiPdp?.GruppoMis ?? DBNull.Value;
-                dr["Ka"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.DatiPdp, "Ka")?.ToString());
-                dr["Kr"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.DatiPdp, "Kr")?.ToString());
-                dr["Kp"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.DatiPdp, "Kp")?.ToString());
+
+                dr["Ka"] = ParseDecimalOrDbNull(pod.DatiPdp?.Ka);
+                dr["Kr"] = ParseDecimalOrDbNull(pod.DatiPdp?.Kr);
+                dr["Kp"] = ParseDecimalOrDbNull(pod.DatiPdp?.Kp);
                 dr["MisuraPotMax"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.DatiPdp, "PotMax")?.ToString());
                 dr["MisuraEaF1"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.DatiPdp, "EaF1")?.ToString());
                 dr["MisuraEaF2"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.DatiPdp, "EaF2")?.ToString());
@@ -274,7 +269,7 @@ namespace Vendita.HubMisureEE.Services
                 dr["ConsumoEriF6"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.DatiPdp, "EriF6")?.ToString());
                 dr["ConsumoEriM"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.DatiPdp, "EriM")?.ToString());
                 dr["ConsumoErM"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.DatiPdp, "ErM")?.ToString());
-                dr["TimeStamp"] = TimeStamp;
+                dr["TimeStamp"] = timeStamp;
 
                 dr["Valido"] = true;
                 dr["IdLetture"] = idLetture;
@@ -311,15 +306,26 @@ namespace Vendita.HubMisureEE.Services
 
                 }
             }
+
+            DataRow drFile = FileXml.NewRow();
+            drFile["DataIns"] = DateTime.Now;
+            drFile["NomeFile"] = fileName;
+            drFile["FileXml"] = "";
+            // drFile["FileXml"] = File.ReadAllText(Path.Combine(FolderLavoro, fileName));
+            drFile["Lavorato"] = true;
+            FileXml.Rows.Add(drFile);
             //Scrittura col bulk
             Bulk2DB(QE, "Curve", connessione);
             Bulk2DB(dtLetture, "Letture", connessione);
             Bulk2DB(FileXml, "FileXml", connessione);
         }
-        public static void SaveFlusso2DB(Models.Rettifica.FlussoMisure FlussoRettifica, SqlConnection connessione, string FolderLavoro, int idLetture, string fileName, string TimeStamp)
+        public static void SaveFlusso2DB(Models.Rettifica.FlussoMisure FlussoRettifica, SqlConnection connessione, string FolderLavoro, int idLetture, string fileName)
         {
             if (FlussoRettifica == null || FlussoRettifica.DatiPod == null || FlussoRettifica.DatiPod.Length == 0)
                 return;
+
+            string[] arrName = fileName.Split('_');
+            string timeStamp = arrName[4];
 
             // 1. PREPARAZIONE DATATABLE
             DataTable dtLetture = new DataTable();
@@ -458,20 +464,12 @@ namespace Vendita.HubMisureEE.Services
 
             //FileXml.PrimaryKey = new DataColumn[] { FileXml.Columns["Id"] };
 
-            DataRow drFile = FileXml.NewRow();
-            drFile["DataIns"] = DateTime.Now;
-            drFile["NomeFile"] = fileName;
-            drFile["FileXml"] = "";
-            drFile["Lavorato"] = true;
-
-            FileXml.Rows.Add(drFile);
-
             string piVaUtente = "";
             string piVaDistributore = "";
             string codContrDisp = "";
             string codiceFlusso = FlussoRettifica.CodFlusso.ToString();
             string nPod = "";
-            DateTime dataMisura = new DateTime();
+            DateTime DataMisure = new DateTime();
 
             for (int i = 0; i < FlussoRettifica.IdentificativiFlusso.Items.Length; i++)
             {
@@ -519,11 +517,12 @@ namespace Vendita.HubMisureEE.Services
                 dr["Pod"] = pod.Pod ?? "";
                 nPod = pod.Pod ?? "";
                 dr["MeseAnno"] = ParseMonthYearOrDbNull(pod.MeseAnno);
-                int dataMisuraStr = Convert.ToInt32($"{d?.Ea[0].Value}");
 
-                //dataMisura = ParseDateOrDbNull(pod?.DataMisura) == DBNull.Value ? DateTime.Parse(dataMisuraStr) : DateTime.Parse(pod?.DataMisura.ToString());
-                //dr["DataMisura"] = ParseDateOrDbNull(pod?.DataMisura);
-                dr["DataMisura"] = ParseDataMisure(pod.MeseAnno, dataMisuraStr);
+                dr["DataMisura"] = ParseDateOrDbNull(pod?.DataMisura) ?? ParseDataMisure(pod.MeseAnno, Convert.ToInt32($"{d?.Ea[0].Value}"));
+                DataMisure = Convert.ToDateTime(dr["DataMisura"].ToString()).Equals(DBNull.Value) ?  Convert.ToDateTime($"{d?.Ea[0].Value}/{pod.MeseAnno}") : Convert.ToDateTime(dr["DataMisura"].ToString());
+                //DataMisure = DateTime.TryParse(dr["DataMisura"].ToString(), out DateTime parsedDate) ? parsedDate : DateTime.MinValue;
+
+
                 dr["DataRilevazione"] = ParseDateOrDbNull(pod.DataRilevazione);
                 //dr["DataPrest"] = $"{d?.Ea[0].Value}/{ParseDateOrDbNull(pod.DataPrest)}";
                 dr["DataPrest"] = ParseDateOrDbNull(pod.DataPrest);
@@ -539,22 +538,48 @@ namespace Vendita.HubMisureEE.Services
                 dr["Kp"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.DatiPdp, "Kp")?.ToString());
 
                 // --- MISURE (GLI ERRORI DI RuntimeBinderException IN GENERE AVVENGONO QUI) ---
-                dr["MisuraEaF1"] = ParseDecimalOrDbNull(d?.EaF1);
-                dr["MisuraEaF2"] = (object)misuraRR?.EaF2?.Replace(",", ".") ?? (object)misuraRRInt?.EaF2?.Replace(",", ".") ?? (object)misuraRNR?.EaF2?.Replace(",", ".") ?? (object)misuraRSNR?.EaF2?.Replace(",", ".") ?? (object)misuraRNOv2?.EaF2?.Replace(",", ".") ?? DBNull.Value;
-                dr["MisuraEaF3"] = (object)misuraRR?.EaF3?.Replace(",", ".") ?? (object)misuraRRInt?.EaF3?.Replace(",", ".") ?? (object)misuraRNR?.EaF3?.Replace(",", ".") ?? (object)misuraRSNR?.EaF3?.Replace(",", ".") ?? (object)misuraRNOv2?.EaF3?.Replace(",", ".") ?? DBNull.Value;
-                dr["MisuraErF1"] = (object)misuraRR?.ErF1?.Replace(",", ".") ?? (object)misuraRRInt?.ErF1?.Replace(",", ".") ?? (object)misuraRNR?.ErF1?.Replace(",", ".") ?? (object)misuraRSNR?.ErF1?.Replace(",", ".") ?? (object)misuraRNOv2?.ErF1?.Replace(",", ".") ?? DBNull.Value;
-                dr["MisuraErF2"] = (object)misuraRR?.ErF2?.Replace(",", ".") ?? (object)misuraRRInt?.ErF2?.Replace(",", ".") ?? (object)misuraRNR?.ErF2?.Replace(",", ".") ?? (object)misuraRSNR?.ErF2?.Replace(",", ".") ?? (object)misuraRNOv2?.ErF2?.Replace(",", ".") ?? DBNull.Value;
-                dr["MisuraErF3"] = (object)misuraRR?.ErF3?.Replace(",", ".") ?? (object)misuraRRInt?.ErF3?.Replace(",", ".") ?? (object)misuraRNR?.ErF3?.Replace(",", ".") ?? (object)misuraRSNR?.ErF3?.Replace(",", ".") ?? (object)misuraRNOv2?.ErF3?.Replace(",", ".") ?? DBNull.Value;
+                dr["MisuraEaF1"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "EaF1")?.ToString());
+                dr["MisuraEaF2"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "EaF2")?.ToString());
+                dr["MisuraEaF3"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "EaF3")?.ToString());
+                dr["MisuraEaF4"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "EaF4")?.ToString());
+                dr["MisuraEaF5"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "EaF5")?.ToString());
+                dr["MisuraEaF6"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "EaF6")?.ToString());
+                dr["MisuraErF1"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "ErF1")?.ToString());
+                dr["MisuraErF2"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "ErF2")?.ToString());
+                dr["MisuraErF3"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "ErF3")?.ToString());
+                dr["MisuraErF4"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "ErF4")?.ToString());
+                dr["MisuraErF5"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "ErF5")?.ToString());
+                dr["MisuraErF6"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "ErF6")?.ToString());
+                dr["MisuraPotF1"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "PotF1")?.ToString());
+                dr["MisuraPotF2"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "PotF2")?.ToString());
+                dr["MisuraPotF3"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "PotF3")?.ToString());
+                dr["MisuraPotF4"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "PotF4")?.ToString());
+                dr["MisuraPotF5"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "PotF5")?.ToString());
+                dr["MisuraPotF6"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "PotF6")?.ToString());
+                dr["MisuraEaM"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "EaM")?.ToString());
                 dr["MisuraPotMax"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "PotMax")?.ToString());
+                //erc
+                dr["MisuraErcF1"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "ErcF1")?.ToString());
+                dr["MisuraErcF2"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "ErcF2")?.ToString());
+                dr["MisuraErcF3"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "ErcF3")?.ToString());
+                dr["MisuraErcF4"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "ErcF4")?.ToString());
+                dr["MisuraErcF5"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "ErcF5")?.ToString());
+                dr["MisuraErcF6"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "ErcF6")?.ToString());
+                dr["MisuraErcM"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "ErcM")?.ToString());
+                //eri
+                dr["MisuraEriF1"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "EriF1")?.ToString());
+                dr["MisuraEriF2"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "EriF2")?.ToString());
+                dr["MisuraEriF3"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "EriF3")?.ToString());
+                dr["MisuraEriF4"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "EriF4")?.ToString());
+                dr["MisuraEriF5"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "EriF5")?.ToString());
+                dr["MisuraEriF6"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "EriF6")?.ToString());
+                dr["MisuraEriM"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "EriM")?.ToString());
+                dr["MisuraErM"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "ErM")?.ToString());
                 // --- Fino a qui
-                dr["MisuraEaM"] = (object)misuraRR?.EaM?.Replace(",", ".") ?? DBNull.Value;
-                dr["MisuraPotM"] = (object)misuraRR?.PotM?.Replace(",", ".") ?? DBNull.Value;
-                dr["MisuraEriM"] = (object)misuraRR?.EriM?.Replace(",", ".") ?? DBNull.Value;
-                dr["MisuraEriF1"] = (object)misuraRR?.EriF1?.Replace(",", ".") ?? (object)misuraRRInt?.EriF1?.Replace(",", ".") ?? (object)misuraRNR?.ErF1?.Replace(",", ".") ?? (object)misuraRSNR?.ErF1?.Replace(",", ".") ?? (object)misuraRNOv2?.ErF1?.Replace(",", ".") ?? DBNull.Value;
-                dr["MisuraEriF2"] = (object)misuraRR?.EriF2?.Replace(",", ".") ?? (object)misuraRRInt?.EriF2?.Replace(",", ".") ?? (object)misuraRNR?.ErF2?.Replace(",", ".") ?? (object)misuraRSNR?.ErF2?.Replace(",", ".") ?? (object)misuraRNOv2?.ErF2?.Replace(",", ".") ?? DBNull.Value;
-                dr["MisuraEriF3"] = (object)misuraRR?.EriF3?.Replace(",", ".") ?? (object)misuraRRInt?.EriF3?.Replace(",", ".") ?? (object)misuraRNR?.ErF3?.Replace(",", ".") ?? (object)misuraRSNR?.ErF3?.Replace(",", ".") ?? (object)misuraRNOv2?.ErF3?.Replace(",", ".") ?? DBNull.Value;
-                string dataInizioPeriodo = consumoRv2?.DataInizioPeriodo ?? consumoRv2Imm?.DataInizioPeriodo;
-                dr["ConsumoDataInizioPeriodo"] = ParseDateOrDbNull(dataInizioPeriodo);
+                dr["MisuraEaM"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "EaM")?.ToString());
+                dr["MisuraPotM"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.Item, "PotM")?.ToString());
+
+                dr["ConsumoDataInizioPeriodo"] = ParseDateOrDbNull(consumoRv2?.DataInizioPeriodo ?? consumoRv2Imm?.DataInizioPeriodo);
                 dr["ConsumoEaF1"] = (object)consumoRv2?.EaF1?.Replace(",", ".") ?? DBNull.Value;
                 dr["ConsumoEaF2"] = (object)consumoRv2?.EaF2?.Replace(",", ".") ?? DBNull.Value;
                 dr["ConsumoEaF3"] = (object)consumoRv2?.EaF3?.Replace(",", ".") ?? DBNull.Value;
@@ -586,7 +611,7 @@ namespace Vendita.HubMisureEE.Services
                 dr["ConsumoEriM"] = (object)consumoRv2?.EriM?.Replace(",", ".") ?? (object)consumoRv2Imm?.EriMint?.Replace(",", ".") ?? DBNull.Value;
                 dr["ConsumoEriM"] = (object)consumoRv2?.EriM?.Replace(",", ".") ?? (object)consumoRv2Imm?.EriMint?.Replace(",", ".") ?? DBNull.Value;
                 dr["ConsumoEriM"] = (object)consumoRv2?.EriM?.Replace(",", ".") ?? (object)consumoRv2Imm?.EriMint?.Replace(",", ".") ?? DBNull.Value;
-                dr["TimeStamp"] = TimeStamp;
+                dr["TimeStamp"] = timeStamp;
 
                 dr["Valido"] = true;
                 dr["IdLetture"] = idLetture;
@@ -631,11 +656,20 @@ namespace Vendita.HubMisureEE.Services
                 }
 
             }
+
+            DataRow drFile = FileXml.NewRow();
+            drFile["DataIns"] = DateTime.Now;
+            drFile["NomeFile"] = fileName;
+            drFile["FileXml"] = "";
+            //drFile["FileXml"] = File.ReadAllText(Path.Combine(FolderLavoro, fileName));
+            drFile["Lavorato"] = true;
+
+            FileXml.Rows.Add(drFile);
             //Scrittura col Bulk
             Bulk2DB(dtLetture, "Letture", connessione);
             Bulk2DB(QE, "Curve", connessione);
             Bulk2DB(FileXml, "FileXml", connessione);
-            ControllaRettifica.IsRettificato(connessione, piVaUtente, piVaDistributore, nPod, dataMisura);
+            ControllaRettifica.IsRettificato(connessione, piVaUtente, piVaDistributore, nPod, DataMisure);
         }
 
         private static void MappaQuartini(DataTable dt, int IdLetture, string tipo, IEnumerable<object> listaQuartini)
