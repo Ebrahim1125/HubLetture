@@ -18,7 +18,7 @@ namespace Vendita.HubMisureEE.Services
                 com.Parameters.Add("@PIvaDistributore", SqlDbType.VarChar).Value = PIvaDistributore;
                 com.Parameters.Add("@Pod", SqlDbType.VarChar).Value = Pod;
                 com.Parameters.Add("@DataMisura", SqlDbType.DateTime).Value = DataMisure;
-                IdFileXml = com.ExecuteNonQuery();
+                IdFileXml = (int)com.ExecuteScalar();
             }
             if (IdFileXml != 0)
             {
