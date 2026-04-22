@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
 using Vendita.HubMisureEE.Models.Periodico;
 
@@ -10,7 +11,7 @@ namespace Vendita.HubMisureEE.Services
 {
     internal class SaveFlusso
     {
-        public static void SaveFlusso2DB(Models.Periodico.FlussoMisure FlussoMisura, SqlConnection connessione, string FolderLavoro, int idLetture, string fileName)
+        public static void SaveFlusso2DB(Models.Periodico.FlussoMisure FlussoMisura, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName)
         {
             if (FlussoMisura == null || FlussoMisura.DatiPod == null || FlussoMisura.DatiPod.Length == 0)
                 return;
@@ -109,12 +110,12 @@ namespace Vendita.HubMisureEE.Services
             dtLetture.Columns.Add("ConsumoEriF6", typeof(decimal));
             dtLetture.Columns.Add("ConsumoEriM", typeof(decimal));
             dtLetture.Columns.Add("Valido", typeof(bool));
-            dtLetture.Columns.Add("IdLetture", typeof(int));
+            dtLetture.Columns.Add("IdFile", typeof(int));
             dtLetture.Columns.Add("TimeStamp", typeof(string));
             dtLetture.PrimaryKey = new DataColumn[] { dtLetture.Columns["ID"] };
 
             int IdLettura = 0;
-            string queryId = @"SELECT IDENT_CURRENT('Letture') AS IdLetture";
+            string queryId = @"SELECT IDENT_CURRENT('Letture') AS IdLettura";
 
             using (SqlCommand cmd = new SqlCommand(queryId, connessione))
             {
@@ -127,6 +128,8 @@ namespace Vendita.HubMisureEE.Services
             QE = new DataTable();
             QE.Columns.Add("Id", typeof(int)).AutoIncrement = true;
             QE.Columns.Add("IdLetture", typeof(int));
+            QE.Columns.Add("IdFile", typeof(int));
+            QE.Columns.Add("Giorno", typeof(int));
             QE.Columns.Add("Tipo", typeof(string)).MaxLength = 105;
             for (int i = 1; i <= 100; i++)
             {
@@ -142,7 +145,7 @@ namespace Vendita.HubMisureEE.Services
 
             //scrittura per Tabella FileXml
             DataTable FileXml = new DataTable();
-            FileXml.Columns.Add("IdLetture", typeof(int)).AutoIncrement = true;
+            FileXml.Columns.Add("IdFile", typeof(int)).AutoIncrement = true;
             FileXml.Columns.Add("DataIns", typeof(DateTime));
             FileXml.Columns.Add("NomeFile", typeof(string)).MaxLength = 250;
             FileXml.Columns.Add("FileXml", typeof(string));
@@ -176,8 +179,8 @@ namespace Vendita.HubMisureEE.Services
                 // --- VARIABILE DINAMICA - mi sono vista costretta ad usare una variabile dinamica perchè 
                 // le classi da prendere erano tante e con nomi diversi, in questo modo prendo tutto da una sola variabile 
                 dynamic d = pod.Item;
-                DettaglioMisuraNOv2Type misuraNOv2 = pod.Item as DettaglioMisuraNOv2Type;
-                DettaglioConsumoV2Type consumo = pod.Item as DettaglioConsumoV2Type;
+                DettaglioMisuraNOv2Type misuraNOv2 = d as DettaglioMisuraNOv2Type;
+                DettaglioConsumoV2Type consumo = d as DettaglioConsumoV2Type;
                 IdLettura++;
 
                 DataRow dr = dtLetture.NewRow();
@@ -189,7 +192,8 @@ namespace Vendita.HubMisureEE.Services
                 dr["Pod"] = pod.Pod ?? "";
                 dr["MeseAnno"] = ParseMonthYearOrDbNull(pod.MeseAnno);
 
-                dr["DataMisura"] = ParseDateOrDbNull(pod?.DataMisura) ?? ParseDataMisure(pod.MeseAnno, Convert.ToInt32($"{d?.Ea[0].Value}"));
+                dr["DataMisura"] = ParseDateOrDbNull(pod?.DataMisura);
+                //dr["DataMisura"] = ParseDateOrDbNull(pod?.DataMisura) ?? ParseDataMisure(pod.MeseAnno, Convert.ToInt32($"{d?.Ea[0].Value}"));
                 dr["DataPrest"] = ParseDateOrDbNull(pod?.DataPrest);
                 dr["CodPrat_SII"] = pod.CodPrat_SII ?? "";
 
@@ -256,57 +260,57 @@ namespace Vendita.HubMisureEE.Services
                 dr["ConsumoPotF1"] = DBNull.Value;
                 dr["ConsumoPotF2"] = DBNull.Value;
                 dr["ConsumoPotF3"] = DBNull.Value;
-                dr["ConsumoEaM"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EaM")?.ToString());
-                dr["ConsumoPotM"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "PotM")?.ToString());
-                dr["ConsumoErcF1"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "ErcF1")?.ToString());
-                dr["ConsumoErcF2"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "ErcF2")?.ToString());
-                dr["ConsumoErcF3"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "ErcF3")?.ToString());
-                dr["ConsumoErcF4"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "ErcF4")?.ToString());
-                dr["ConsumoErcF5"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "ErcF5")?.ToString());
-                dr["ConsumoErcF6"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "ErcF6")?.ToString());
-                dr["ConsumoErcM"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "ErcM")?.ToString());
-                dr["ConsumoEriF1"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EriF1")?.ToString());
-                dr["ConsumoEriF2"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EriF2")?.ToString());
-                dr["ConsumoEriF3"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EriF3")?.ToString());
-                dr["ConsumoEriF4"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EriF4")?.ToString());
-                dr["ConsumoEriF5"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EriF5")?.ToString());
-                dr["ConsumoEriF6"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EriF6")?.ToString());
-                dr["ConsumoEriM"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EriM")?.ToString());
-                dr["ConsumoErM"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "ErM")?.ToString());
+                dr["ConsumoEaM"] = ParseDecimalOrDbNull(GetPropOrDbNull(consumo, "EaM")?.ToString());
+                dr["ConsumoPotM"] = ParseDecimalOrDbNull(GetPropOrDbNull(consumo, "PotM")?.ToString());
+                dr["ConsumoErcF1"] = ParseDecimalOrDbNull(GetPropOrDbNull(consumo, "ErcF1")?.ToString());
+                dr["ConsumoErcF2"] = ParseDecimalOrDbNull(GetPropOrDbNull(consumo, "ErcF2")?.ToString());
+                dr["ConsumoErcF3"] = ParseDecimalOrDbNull(GetPropOrDbNull(consumo, "ErcF3")?.ToString());
+                dr["ConsumoErcF4"] = ParseDecimalOrDbNull(GetPropOrDbNull(consumo, "ErcF4")?.ToString());
+                dr["ConsumoErcF5"] = ParseDecimalOrDbNull(GetPropOrDbNull(consumo, "ErcF5")?.ToString());
+                dr["ConsumoErcF6"] = ParseDecimalOrDbNull(GetPropOrDbNull(consumo, "ErcF6")?.ToString());
+                dr["ConsumoErcM"] = ParseDecimalOrDbNull(GetPropOrDbNull(consumo, "ErcM")?.ToString());
+                dr["ConsumoEriF1"] = ParseDecimalOrDbNull(GetPropOrDbNull(consumo, "EriF1")?.ToString());
+                dr["ConsumoEriF2"] = ParseDecimalOrDbNull(GetPropOrDbNull(consumo, "EriF2")?.ToString());
+                dr["ConsumoEriF3"] = ParseDecimalOrDbNull(GetPropOrDbNull(consumo, "EriF3")?.ToString());
+                dr["ConsumoEriF4"] = ParseDecimalOrDbNull(GetPropOrDbNull(consumo, "EriF4")?.ToString());
+                dr["ConsumoEriF5"] = ParseDecimalOrDbNull(GetPropOrDbNull(consumo, "EriF5")?.ToString());
+                dr["ConsumoEriF6"] = ParseDecimalOrDbNull(GetPropOrDbNull(consumo, "EriF6")?.ToString());
+                dr["ConsumoEriM"] = ParseDecimalOrDbNull(GetPropOrDbNull(consumo, "EriM")?.ToString());
+                dr["ConsumoErM"] = ParseDecimalOrDbNull(GetPropOrDbNull(consumo, "ErM")?.ToString());
                 dr["TimeStamp"] = timeStamp;
 
                 dr["Valido"] = true;
-                dr["IdLetture"] = idLetture;
+                dr["IdFile"] = IdFile;
 
                 dtLetture.Rows.Add(dr);
 
-                if (pod.Item is Models.Periodico.DettaglioMisuraPDOv2Type pdo)
+                if (pod.Item is DettaglioMisuraPDOv2Type pdo)
                 {
-                    MappaQuartini(QE, IdLettura, "Ea", pdo.Ea);
-                    MappaQuartini(QE, IdLettura, "Er", pdo.Er);
-                    MappaQuartini(QE, IdLettura, "Erc", pdo.Erc);
-                    MappaQuartini(QE, IdLettura, "Eri", pdo.Eri);
+                    MappaQuartini(QE, IdFile, IdLettura, "Ea", pdo.Ea);
+                    MappaQuartini(QE, IdFile, IdLettura, "Er", pdo.Er);
+                    MappaQuartini(QE, IdFile, IdLettura, "Erc", pdo.Erc);
+                    MappaQuartini(QE, IdFile, IdLettura, "Eri", pdo.Eri);
                 }
-                else if (pod.Item is Models.Periodico.DettaglioMisuraPeriodico2GORType gor)
+                else if (pod.Item is DettaglioMisuraPeriodico2GORType gor)
                 {
-                    MappaQuartini(QE, IdLettura, "Ea", gor.Ea);
-                    MappaQuartini(QE, IdLettura, "Er", gor.Er);
-                    MappaQuartini(QE, IdLettura, "Erc", gor.Erc);
-                    MappaQuartini(QE, IdLettura, "Eri", gor.Eri);
+                    MappaQuartini(QE, IdFile, IdLettura, "Ea", gor.Ea);
+                    MappaQuartini(QE, IdFile, IdLettura, "Er", gor.Er);
+                    MappaQuartini(QE, IdFile, IdLettura, "Erc", gor.Erc);
+                    MappaQuartini(QE, IdFile, IdLettura, "Eri", gor.Eri);
                 }
-                else if (pod.Item is Models.Periodico.DettaglioMisuraPeriodico2GRType gr)
+                else if (pod.Item is DettaglioMisuraPeriodico2GRType gr)
                 {
-                    MappaQuartini(QE, IdLettura, "Ea", gr.Ea);
-                    MappaQuartini(QE, IdLettura, "Er", gr.Er);
-                    MappaQuartini(QE, IdLettura, "Erc", gr.Erc);
-                    MappaQuartini(QE, IdLettura, "Eri", gr.Eri);
+                    MappaQuartini(QE, IdFile, IdLettura, "Ea", gr.Ea);
+                    MappaQuartini(QE, IdFile, IdLettura, "Er", gr.Er);
+                    MappaQuartini(QE, IdFile, IdLettura, "Erc", gr.Erc);
+                    MappaQuartini(QE, IdFile, IdLettura, "Eri", gr.Eri);
                 }
-                else if (pod.Item is Models.Periodico.DettaglioMisuraPeriodicoIntType pint)
+                else if (pod.Item is DettaglioMisuraPeriodicoIntType pint)
                 {
-                    MappaQuartini(QE, IdLettura, "Ea", pint.Ea);
-                    MappaQuartini(QE, IdLettura, "Er", pint.Er);
-                    MappaQuartini(QE, IdLettura, "Erc", pint.Erc);
-                    MappaQuartini(QE, IdLettura, "Eri", pint.Eri);
+                    MappaQuartini(QE, IdFile, IdLettura, "Ea", pint.Ea);
+                    MappaQuartini(QE, IdFile, IdLettura, "Er", pint.Er);
+                    MappaQuartini(QE, IdFile, IdLettura, "Erc", pint.Erc);
+                    MappaQuartini(QE, IdFile, IdLettura, "Eri", pint.Eri);
 
                 }
             }
@@ -322,8 +326,9 @@ namespace Vendita.HubMisureEE.Services
             Bulk2DB(QE, "Curve", connessione);
             Bulk2DB(dtLetture, "Letture", connessione);
             Bulk2DB(FileXml, "FileXml", connessione);
+            FileLavorato(FolderLavoro, fileName);
         }
-        public static void SaveFlusso2DB(Models.Rettifica.FlussoMisure FlussoRettifica, SqlConnection connessione, string FolderLavoro, int idLetture, string fileName)
+        public static void SaveFlusso2DB(Models.Rettifica.FlussoMisure FlussoRettifica, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName)
         {
             if (FlussoRettifica == null || FlussoRettifica.DatiPod == null || FlussoRettifica.DatiPod.Length == 0)
                 return;
@@ -423,7 +428,7 @@ namespace Vendita.HubMisureEE.Services
             dtLetture.Columns.Add("ConsumoEriF6", typeof(decimal));
             dtLetture.Columns.Add("ConsumoEriM", typeof(decimal));
             dtLetture.Columns.Add("Valido", typeof(bool));
-            dtLetture.Columns.Add("IdLetture", typeof(string));
+            dtLetture.Columns.Add("IdFile", typeof(string));
             dtLetture.Columns.Add("TimeStamp", typeof(string));
             dtLetture.PrimaryKey = new DataColumn[] { dtLetture.Columns["ID"] };
 
@@ -431,7 +436,7 @@ namespace Vendita.HubMisureEE.Services
             //va cambiato IdLettura?
             int IdLettura = 0;
 
-            string queryId = @"SELECT IDENT_CURRENT('Letture') AS IdLetture";
+            string queryId = @"SELECT IDENT_CURRENT('Letture') AS IdLettura";
 
             using (SqlCommand cmd = new SqlCommand(queryId, connessione))
             {
@@ -444,10 +449,11 @@ namespace Vendita.HubMisureEE.Services
             QE = new DataTable();
             QE.Columns.Add("Id", typeof(int)).AutoIncrement = true;
             QE.Columns.Add("IdLetture", typeof(int));
+            QE.Columns.Add("IdFile", typeof(int));
+            QE.Columns.Add("Giorno", typeof(int));
             QE.Columns.Add("Tipo", typeof(string)).MaxLength = 105;
             for (int i = 1; i <= 100; i++)
             {
-
                 DataColumn col = new DataColumn($"E{i}", typeof(decimal))
                 {
                     DefaultValue = 0m,
@@ -460,7 +466,7 @@ namespace Vendita.HubMisureEE.Services
 
             //scrittura per Tabella Xml
             DataTable FileXml = new DataTable();
-            FileXml.Columns.Add("IdLetture", typeof(int)).AutoIncrement = true;
+            FileXml.Columns.Add("IdFile", typeof(int)).AutoIncrement = true;
             FileXml.Columns.Add("DataIns", typeof(DateTime));
             FileXml.Columns.Add("NomeFile", typeof(string)).MaxLength = 250;
             FileXml.Columns.Add("FileXml", typeof(string));
@@ -517,45 +523,16 @@ namespace Vendita.HubMisureEE.Services
 
                 dr["Id"] = IdLettura;
                 dr["CodFlusso"] = codiceFlusso;
-                dr["PIvaUtente"] = piVaUtente ?? "";
-                dr["PIvaDistributore"] = piVaDistributore ?? "";
-                dr["CodContrDisp"] = codContrDisp ?? "";
-                dr["Pod"] = pod.Pod ?? "";
-                nPod = pod.Pod ?? "";
+                dr["PIvaUtente"] = piVaUtente;
+                dr["PIvaDistributore"] = piVaDistributore;
+                dr["CodContrDisp"] = codContrDisp;
+                dr["Pod"] = pod.Pod;
+                nPod = pod.Pod;
                 dr["MeseAnno"] = ParseMonthYearOrDbNull(pod.MeseAnno);
 
-                object dataMisuraObj = ParseDateOrDbNull(pod?.DataMisura);
+                dr["DataMisura"] = ParseDateOrDbNull(pod?.DataMisura);
 
-                if (dataMisuraObj != DBNull.Value)
-                {
-                    dr["DataMisura"] = dataMisuraObj;
-                    DataMisure = (DateTime)dataMisuraObj;
-                }
-                else
-                {
-                    int giorno = 0;
-
-                    if (d?.Ea != null && d.Ea.Length > 0 && int.TryParse(d.Ea[0].Value?.ToString(), out giorno))
-                    {
-                        object parsed = ParseDataMisureSafe(pod.MeseAnno, giorno);
-
-                        if (parsed != DBNull.Value)
-                        {
-                            dr["DataMisura"] = parsed;
-                            DataMisure = (DateTime)parsed;
-                        }
-                        else
-                        {
-                            dr["DataMisura"] = DBNull.Value;
-                            DataMisure = DateTime.MinValue;
-                        }
-                    }
-                    else
-                    {
-                        dr["DataMisura"] = DBNull.Value;
-                        DataMisure = DateTime.MinValue;
-                    }
-                }
+              
 
                 dr["DataRilevazione"] = ParseDateOrDbNull(pod.DataRilevazione);
                 dr["DataPrest"] = ParseDateOrDbNull(pod.DataPrest);
@@ -647,45 +624,45 @@ namespace Vendita.HubMisureEE.Services
                 dr["TimeStamp"] = timeStamp;
 
                 dr["Valido"] = true;
-                dr["IdLetture"] = idLetture;
+                dr["IdFile"] = IdFile;
 
                 dtLetture.Rows.Add(dr);
 
                 //Quartini Rettifiche
                 if (pod.Item is Models.Rettifica.DettaglioMisuraRRType rr)
                 {
-                    MappaQuartini(QE, IdLettura, "Ea", rr.Ea);
-                    MappaQuartini(QE, IdLettura, "Er", rr.Er);
-                    MappaQuartini(QE, IdLettura, "Erc", rr.Erc);
-                    MappaQuartini(QE, IdLettura, "Eri", rr.Eri);
+                    MappaQuartini(QE, IdFile, IdLettura, "Ea", rr.Ea);
+                    MappaQuartini(QE, IdFile, IdLettura, "Er", rr.Er);
+                    MappaQuartini(QE, IdFile, IdLettura, "Erc", rr.Erc);
+                    MappaQuartini(QE, IdFile, IdLettura, "Eri", rr.Eri);
                 }
                 else if (pod.Item is Models.Rettifica.DettaglioMisuraRRIntType rrint)
                 {
-                    MappaQuartini(QE, IdLettura, "Ea", rrint.Ea);
-                    MappaQuartini(QE, IdLettura, "Er", rrint.Er);
-                    MappaQuartini(QE, IdLettura, "Erc", rrint.Erc);
-                    MappaQuartini(QE, IdLettura, "Eri", rrint.Eri);
+                    MappaQuartini(QE, IdFile, IdLettura, "Ea", rrint.Ea);
+                    MappaQuartini(QE, IdFile, IdLettura, "Er", rrint.Er);
+                    MappaQuartini(QE, IdFile, IdLettura, "Erc", rrint.Erc);
+                    MappaQuartini(QE, IdFile, IdLettura, "Eri", rrint.Eri);
                 }
                 else if (pod.Item is Models.Rettifica.DettaglioMisuraRNRType rnr)
                 {
-                    MappaQuartini(QE, IdLettura, "Ea", rnr.Ea);
-                    MappaQuartini(QE, IdLettura, "Er", rnr.Er);
-                    MappaQuartini(QE, IdLettura, "Erc", rnr.Erc);
-                    MappaQuartini(QE, IdLettura, "Eri", rnr.Eri);
+                    MappaQuartini(QE, IdFile, IdLettura, "Ea", rnr.Ea);
+                    MappaQuartini(QE, IdFile, IdLettura, "Er", rnr.Er);
+                    MappaQuartini(QE, IdFile, IdLettura, "Erc", rnr.Erc);
+                    MappaQuartini(QE, IdFile, IdLettura, "Eri", rnr.Eri);
                 }
                 else if (pod.Item is Models.Rettifica.DettaglioMisuraRORType ror)
                 {
-                    MappaQuartini(QE, IdLettura, "Ea", ror.Ea);
-                    MappaQuartini(QE, IdLettura, "Er", ror.Er);
-                    MappaQuartini(QE, IdLettura, "Erc", ror.Erc);
-                    MappaQuartini(QE, IdLettura, "Eri", ror.Eri);
+                    MappaQuartini(QE, IdFile, IdLettura, "Ea", ror.Ea);
+                    MappaQuartini(QE, IdFile, IdLettura, "Er", ror.Er);
+                    MappaQuartini(QE, IdFile, IdLettura, "Erc", ror.Erc);
+                    MappaQuartini(QE, IdFile, IdLettura, "Eri", ror.Eri);
                 }
                 else if (pod.Item is Models.Rettifica.DettaglioMisuraRFOv2Type rfov2)
                 {
-                    MappaQuartini(QE, IdLettura, "Ea", rfov2.Ea);
-                    MappaQuartini(QE, IdLettura, "Er", rfov2.Er);
-                    MappaQuartini(QE, IdLettura, "Erc", rfov2.Erc);
-                    MappaQuartini(QE, IdLettura, "Eri", rfov2.Eri);
+                    MappaQuartini(QE, IdFile, IdLettura, "Ea", rfov2.Ea);
+                    MappaQuartini(QE, IdFile, IdLettura, "Er", rfov2.Er);
+                    MappaQuartini(QE, IdFile, IdLettura, "Erc", rfov2.Erc);
+                    MappaQuartini(QE, IdFile, IdLettura, "Eri", rfov2.Eri);
                 }
 
             }
@@ -697,13 +674,15 @@ namespace Vendita.HubMisureEE.Services
             drFile["Lavorato"] = true;
 
             FileXml.Rows.Add(drFile);
+
             //Scrittura col Bulk
             Bulk2DB(dtLetture, "Letture", connessione);
             Bulk2DB(QE, "Curve", connessione);
             Bulk2DB(FileXml, "FileXml", connessione);
             ControllaRettifica.IsRettificato(connessione, piVaUtente, piVaDistributore, nPod, DataMisure);
+            FileLavorato(FolderLavoro, fileName);
         }
-        private static void MappaQuartini(DataTable dt, int IdLetture, string tipo, IEnumerable<object> listaQuartini)
+        private static void MappaQuartini(DataTable dt, int IdFile, int IdLettura, string tipo, IEnumerable<object> listaQuartini)
         {
             if (listaQuartini == null) return;
 
@@ -713,9 +692,11 @@ namespace Vendita.HubMisureEE.Services
                     continue;
 
                 DataRow row = dt.NewRow();
-                row["IdLetture"] = IdLetture;
+                row["IdLetture"] = IdLettura;
+                row["IdFile"] = IdFile;
+                row["Giorno"] = e.GetType().GetProperty("Value")?.GetValue(e);
                 row["Tipo"] = tipo;
-
+                
                 for (int i = 1; i <= 100; i++)
                 {
                     string propName = "E" + i;
@@ -786,7 +767,7 @@ namespace Vendita.HubMisureEE.Services
                 DateTimeStyles.None,
                 out DateTime result))
             {
-                return new DateTime(result.Year, result.Month, 1);
+                return result;
             }
 
             return DBNull.Value;
@@ -848,5 +829,14 @@ namespace Vendita.HubMisureEE.Services
 
             return new DateTime(result.Year, result.Month, giorno);
         }
+
+        private static void FileLavorato(string folderLavoro, string namefile)
+        {
+            File.Delete(Path.Combine(folderLavoro, namefile));
+
+            HubLog.SaveLog2DB("INFO", $"File lavorato: {namefile}", "", "");
+
+        }
     }
 }
+
