@@ -186,10 +186,10 @@ namespace Vendita.HubMisureEE.Services
                 DataRow dr = dtLetture.NewRow();
                 dr["Id"] = IdLettura;
                 dr["CodFlusso"] = codiceFlusso;
-                dr["PIvaUtente"] = piVaUtente ?? "";
-                dr["PIvaDistributore"] = piVaDistributore ?? "";
-                dr["CodContrDisp"] = codContrDisp ?? "";
-                dr["Pod"] = pod.Pod ?? "";
+                dr["PIvaUtente"] = piVaUtente;
+                dr["PIvaDistributore"] = piVaDistributore;
+                dr["CodContrDisp"] = codContrDisp;
+                dr["Pod"] = pod.Pod;
                 dr["MeseAnno"] = ParseMonthYearOrDbNull(pod.MeseAnno);
 
                 dr["DataMisura"] = ParseDateOrDbNull(pod?.DataMisura);
@@ -197,15 +197,15 @@ namespace Vendita.HubMisureEE.Services
                 dr["DataPrest"] = ParseDateOrDbNull(pod?.DataPrest);
                 dr["CodPrat_SII"] = pod.CodPrat_SII ?? "";
 
-                //Campi Rettifica (forse si possono togliere qui)
-                dr["TipoRettifica"] = (d.GetType().GetProperty("TipoRettifica") != null) ? d?.TipoRettifica ?? DBNull.Value : ((d.GetType().GetProperty("TipoRettifica") != null) ? d?.TipoRettifica ?? DBNull.Value : DBNull.Value);
-                dr["DataRilevazione"] = (d.GetType().GetProperty("DataRilevazione") != null) ? d?.DataRilevazione ?? DBNull.Value : ((d.GetType().GetProperty("DataRilevazione") != null) ? d?.DataRilevazione ?? DBNull.Value : DBNull.Value);
-                dr["Motivazione"] = (d.GetType().GetProperty("Motivazione") != null) ? d?.Motivazione ?? DBNull.Value : ((d.GetType().GetProperty("Motivazione") != null) ? d?.Motivazione ?? DBNull.Value : DBNull.Value);
-                dr["MisuraRaccolta"] = (object)d?.Raccolta ?? DBNull.Value;
-                dr["MisuraTipoDato"] = d?.TipoDato != null ? d.TipoDato.ToString() : DBNull.Value;
-                dr["MisuraTipoCp"] = d?.TipoCp != null ? d.TipoCp.ToString() : DBNull.Value;
-                dr["MisuraCausaOstativa"] = d?.CausaOstativa != null ? d.CausaOstativa.ToString() : DBNull.Value;
-                dr["MisuraValidato"] = d?.Validato != null ? d.Validato.ToString() : DBNull.Value;
+                //Campi Periodico (forse si possono togliere qui)
+                dr["TipoRettifica"] = (d.GetType().GetProperty("TipoRettifica") != null) ? d?.TipoRettifica : DBNull.Value;
+                dr["DataRilevazione"] = (d.GetType().GetProperty("DataRilevazione") != null) ? d?.DataRilevazione : DBNull.Value ;
+                dr["Motivazione"] = (d.GetType().GetProperty("Motivazione") != null) ? d?.Motivazione : DBNull.Value;
+                dr["MisuraRaccolta"] = d?.Raccolta ?? DBNull.Value;
+                dr["MisuraTipoDato"] = d?.TipoDato ?? DBNull.Value;
+                dr["MisuraTipoCp"] = d?.TipoCp ?? DBNull.Value;
+                dr["MisuraCausaOstativa"] = d?.CausaOstativa ?? DBNull.Value;
+                dr["MisuraValidato"] = d?.Validato ?? DBNull.Value;
                 dr["Trattamento"] = (object)pod.DatiPdp?.Trattamento ?? DBNull.Value;
                 dr["Tensione"] = (object)pod.DatiPdp?.Tensione ?? DBNull.Value;
                 dr["Forfait"] = (object)pod.DatiPdp?.Forfait ?? DBNull.Value;
@@ -326,7 +326,7 @@ namespace Vendita.HubMisureEE.Services
             Bulk2DB(QE, "Curve", connessione);
             Bulk2DB(dtLetture, "Letture", connessione);
             Bulk2DB(FileXml, "FileXml", connessione);
-            FileLavorato(FolderLavoro, fileName);
+            FileLavorato(FolderLavoro, fileName, connessione);
         }
         public static void SaveFlusso2DB(Models.Rettifica.FlussoMisure FlussoRettifica, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName)
         {
@@ -532,16 +532,14 @@ namespace Vendita.HubMisureEE.Services
 
                 dr["DataMisura"] = ParseDateOrDbNull(pod?.DataMisura);
 
-              
-
                 dr["DataRilevazione"] = ParseDateOrDbNull(pod.DataRilevazione);
                 dr["DataPrest"] = ParseDateOrDbNull(pod.DataPrest);
-                dr["TipoRettifica"] = tipoRettifica.Length > 1 ? tipoRettifica.Substring(0, 1) : tipoRettifica;
-                dr["Motivazione"] = (pod.Motivazione.ToString().Length > 2) ? pod.Motivazione.ToString().Substring(0, 2).Replace("Item", "0") : (object)pod.Motivazione.ToString().Replace("Item", "0") ?? DBNull.Value;
-                dr["CodPrat_SII"] = (pod.CodPrat_SII?.Length > 15) ? pod.CodPrat_SII.Substring(0, 15) : (pod.CodPrat_SII ?? "");
-                dr["Trattamento"] = (pod.DatiPdp?.Trattamento.ToString().Length > 1) ? pod.DatiPdp.Trattamento.ToString().Substring(0, 1) : (object)pod.DatiPdp?.Trattamento ?? DBNull.Value;
-                dr["Forfait"] = (pod.DatiPdp?.Forfait.ToString().Length > 2) ? pod.DatiPdp.Forfait.ToString().Substring(0, 2) : (object)pod.DatiPdp?.Forfait ?? DBNull.Value;
-                dr["GruppoMis"] = (pod.DatiPdp?.GruppoMis.ToString().Length > 2) ? pod.DatiPdp.GruppoMis.ToString().Substring(0, 2) : (object)pod.DatiPdp?.GruppoMis ?? DBNull.Value;
+                dr["TipoRettifica"] = tipoRettifica ?? (object)DBNull.Value;
+                dr["Motivazione"] = pod?.Motivazione.ToString().Replace("Item", "0") ?? (object)DBNull.Value;
+                dr["CodPrat_SII"] = pod.CodPrat_SII ?? (object)DBNull.Value;
+                dr["Trattamento"] = (pod.DatiPdp?.Trattamento.ToString().Length > 1) ? pod.DatiPdp.Trattamento.ToString() : (object)pod.DatiPdp?.Trattamento ?? DBNull.Value;
+                dr["Forfait"] = (pod.DatiPdp?.Forfait.ToString().Length > 2) ? pod.DatiPdp.Forfait.ToString() : (object)pod.DatiPdp?.Forfait ?? DBNull.Value;
+                dr["GruppoMis"] = (pod.DatiPdp?.GruppoMis.ToString().Length > 2) ? pod.DatiPdp.GruppoMis.ToString() : (object)pod.DatiPdp?.GruppoMis ?? DBNull.Value;
                 dr["Tensione"] = (object)pod.DatiPdp?.Tensione ?? DBNull.Value;
                 dr["Ka"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.DatiPdp, "Ka")?.ToString());
                 dr["Kr"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.DatiPdp, "Kr")?.ToString());
@@ -590,37 +588,37 @@ namespace Vendita.HubMisureEE.Services
                 dr["MisuraPotM"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "PotM")?.ToString());
 
                 dr["ConsumoDataInizioPeriodo"] = ParseDateOrDbNull(consumoRv2?.DataInizioPeriodo ?? consumoRv2Imm?.DataInizioPeriodo);
-                dr["ConsumoEaF1"] = (object)consumoRv2?.EaF1?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoEaF2"] = (object)consumoRv2?.EaF2?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoEaF3"] = (object)consumoRv2?.EaF3?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoErF1"] = (object)consumoRv2?.ErF1?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoErF2"] = (object)consumoRv2?.ErF2?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoErF3"] = (object)consumoRv2?.ErF3?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoPotF1"] = (object)consumoRv2?.PotF1?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoPotF2"] = (object)consumoRv2?.PotF2?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoPotF3"] = (object)consumoRv2?.PotF3?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoEaM"] = (object)consumoRv2?.EaM?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoPotM"] = (object)consumoRv2?.PotM?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoErcF1"] = (object)consumoRv2?.ErcF1?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoErcF2"] = (object)consumoRv2?.ErcF2?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoErcF3"] = (object)consumoRv2?.ErcF3?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoErcM"] = (object)consumoRv2?.EriF1?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoEriF1"] = (object)consumoRv2?.EriF1?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoEriF2"] = (object)consumoRv2?.EriF2?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoEriF3"] = (object)consumoRv2?.EriF3?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoEaM"] = (object)consumoRv2?.EaM?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoPotM"] = (object)consumoRv2?.PotM?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoErcF1"] = (object)consumoRv2?.ErcF1?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoErcF2"] = (object)consumoRv2?.ErcF2?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoErcF3"] = (object)consumoRv2?.ErcF3?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoErcM"] = (object)consumoRv2?.EriF1?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoEriF1"] = (object)consumoRv2?.EriF1?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoEriF2"] = (object)consumoRv2?.EriF2?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoEriF3"] = (object)consumoRv2?.EriF3?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoEaM"] = (object)consumoRv2?.EaM?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoEriM"] = (object)consumoRv2?.EriM?.Replace(",", ".") ?? (object)consumoRv2Imm?.EriMint?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoEriM"] = (object)consumoRv2?.EriM?.Replace(",", ".") ?? (object)consumoRv2Imm?.EriMint?.Replace(",", ".") ?? DBNull.Value;
-                dr["ConsumoEriM"] = (object)consumoRv2?.EriM?.Replace(",", ".") ?? (object)consumoRv2Imm?.EriMint?.Replace(",", ".") ?? DBNull.Value;
+                dr["ConsumoEaF1"] = ParseDecimalOrDbNull(consumoRv2?.EaF1).ToString();
+                dr["ConsumoEaF2"] = ParseDecimalOrDbNull(consumoRv2?.EaF2).ToString();
+                dr["ConsumoEaF3"] = ParseDecimalOrDbNull(consumoRv2?.EaF3).ToString();
+                dr["ConsumoErF1"] = ParseDecimalOrDbNull(consumoRv2?.ErF1).ToString();
+                dr["ConsumoErF2"] = ParseDecimalOrDbNull(consumoRv2?.ErF2).ToString();
+                dr["ConsumoErF3"] = ParseDecimalOrDbNull(consumoRv2?.ErF3).ToString();
+                dr["ConsumoPotF1"] = ParseDecimalOrDbNull(consumoRv2?.PotF1).ToString();
+                dr["ConsumoPotF2"] = ParseDecimalOrDbNull(consumoRv2?.PotF2).ToString();
+                dr["ConsumoPotF3"] = ParseDecimalOrDbNull(consumoRv2?.PotF3).ToString();
+                dr["ConsumoEaM"] = ParseDecimalOrDbNull(consumoRv2?.EaM).ToString();
+                dr["ConsumoPotM"] = ParseDecimalOrDbNull(consumoRv2?.PotM).ToString();
+                dr["ConsumoErcF1"] = ParseDecimalOrDbNull(consumoRv2?.ErcF1).ToString();
+                dr["ConsumoErcF2"] = ParseDecimalOrDbNull(consumoRv2?.ErcF2).ToString();
+                dr["ConsumoErcF3"] = ParseDecimalOrDbNull(consumoRv2?.ErcF3).ToString();
+                dr["ConsumoErcM"] = ParseDecimalOrDbNull(consumoRv2?.ErcM).ToString();
+                dr["ConsumoEriF1"] = ParseDecimalOrDbNull(consumoRv2?.EriF1).ToString();
+                dr["ConsumoEriF2"] = ParseDecimalOrDbNull(consumoRv2?.EriF2).ToString();
+                dr["ConsumoEriF3"] = ParseDecimalOrDbNull(consumoRv2?.EriF3).ToString();
+                dr["ConsumoEaM"] = ParseDecimalOrDbNull(consumoRv2?.EaM).ToString();
+                dr["ConsumoPotM"] = ParseDecimalOrDbNull(consumoRv2?.PotM).ToString();
+                dr["ConsumoErcF1"] = ParseDecimalOrDbNull(consumoRv2?.ErcF1).ToString();
+                dr["ConsumoErcF2"] = ParseDecimalOrDbNull(consumoRv2?.ErcF2).ToString();
+                dr["ConsumoErcF3"] = ParseDecimalOrDbNull(consumoRv2?.ErcF3).ToString();
+                dr["ConsumoErcM"] = ParseDecimalOrDbNull(consumoRv2?.EriF1).ToString();
+                dr["ConsumoEriF1"] = ParseDecimalOrDbNull(consumoRv2?.EriF1).ToString();
+                dr["ConsumoEriF2"] = ParseDecimalOrDbNull(consumoRv2?.EriF2).ToString();
+                dr["ConsumoEriF3"] = ParseDecimalOrDbNull(consumoRv2?.EriF3).ToString();
+                dr["ConsumoEaM"] = ParseDecimalOrDbNull(consumoRv2?.EaM).ToString();
+                dr["ConsumoEriM"] = ParseDecimalOrDbNull(consumoRv2?.EriM ?? consumoRv2Imm?.EriMint).ToString();
+                dr["ConsumoEriM"] = ParseDecimalOrDbNull(consumoRv2?.EriM ?? consumoRv2Imm?.EriMint).ToString();
+                dr["ConsumoEriM"] = ParseDecimalOrDbNull(consumoRv2?.EriM ?? consumoRv2Imm?.EriMint).ToString();
                 dr["TimeStamp"] = timeStamp;
 
                 dr["Valido"] = true;
@@ -664,7 +662,7 @@ namespace Vendita.HubMisureEE.Services
                     MappaQuartini(QE, IdFile, IdLettura, "Erc", rfov2.Erc);
                     MappaQuartini(QE, IdFile, IdLettura, "Eri", rfov2.Eri);
                 }
-
+                ControllaRettifica.IsRettificato(connessione, piVaUtente, piVaDistributore, nPod, DataMisure);
             }
 
             DataRow drFile = FileXml.NewRow();
@@ -679,8 +677,8 @@ namespace Vendita.HubMisureEE.Services
             Bulk2DB(dtLetture, "Letture", connessione);
             Bulk2DB(QE, "Curve", connessione);
             Bulk2DB(FileXml, "FileXml", connessione);
-            ControllaRettifica.IsRettificato(connessione, piVaUtente, piVaDistributore, nPod, DataMisure);
-            FileLavorato(FolderLavoro, fileName);
+
+            FileLavorato(FolderLavoro, fileName, connessione);
         }
         private static void MappaQuartini(DataTable dt, int IdFile, int IdLettura, string tipo, IEnumerable<object> listaQuartini)
         {
@@ -696,7 +694,7 @@ namespace Vendita.HubMisureEE.Services
                 row["IdFile"] = IdFile;
                 row["Giorno"] = e.GetType().GetProperty("Value")?.GetValue(e);
                 row["Tipo"] = tipo;
-                
+
                 for (int i = 1; i <= 100; i++)
                 {
                     string propName = "E" + i;
@@ -829,13 +827,10 @@ namespace Vendita.HubMisureEE.Services
 
             return new DateTime(result.Year, result.Month, giorno);
         }
-
-        private static void FileLavorato(string folderLavoro, string namefile)
+        private static void FileLavorato(string folderLavoro, string namefile, SqlConnection connessione)
         {
             File.Delete(Path.Combine(folderLavoro, namefile));
-
-            HubLog.SaveLog2DB("INFO", $"File lavorato: {namefile}", "", "");
-
+            HubLog.SaveLog2DB("INFO", $"File lavorato: {namefile}", "", connessione);
         }
     }
 }
