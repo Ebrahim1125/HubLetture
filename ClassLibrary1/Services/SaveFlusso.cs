@@ -153,10 +153,6 @@ namespace Vendita.HubMisureEE.Services
 
             FileXml.PrimaryKey = new DataColumn[] { FileXml.Columns["Id"] };
 
-
-
-
-
             string piVaUtente = "";
             string piVaDistributore = "";
             string codContrDisp = "";
@@ -473,8 +469,6 @@ namespace Vendita.HubMisureEE.Services
             FileXml.Columns.Add("Lavorato", typeof(bool));
 
             //FileXml.PrimaryKey = new DataColumn[] { FileXml.Columns["Id"] };
-
-
 
             string piVaUtente = "";
             string piVaDistributore = "";
