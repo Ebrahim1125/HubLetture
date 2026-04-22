@@ -10,7 +10,7 @@ namespace Vendita.HubMisureEE.Services
 {
     public class ZipExtractorService
     {
-        public static List<string> UnloadZip(string inFile, string outFile, string stringConnect, out int IdLetture)
+        public static List<string> UnloadZip(string inFile, string outFile, string stringConnect, out int IdFile)
         {
             string[] zipFiles = null;
             string[] xmlFiles = null;
@@ -45,17 +45,17 @@ namespace Vendita.HubMisureEE.Services
 
             DataTable FileXml = new DataTable();
 
-            IdLetture = 0;
+            IdFile = 0;
             try
             {
                 using (SqlConnection conn = new SqlConnection(stringConnect))
                 {
                     conn.Open();
 
-                    using (var FileXmlDb = new SqlDataAdapter("SELECT IdLetture, NomeFile, Lavorato FROM FileXml", conn))
+                    using (var FileXmlDb = new SqlDataAdapter("SELECT IdFile, NomeFile, Lavorato FROM FileXml", conn))
                     {
                         FileXmlDb.Fill(FileXml);
-                        IdLetture = FileXml.Rows.Count;
+                        IdFile = FileXml.Rows.Count + 1;
                     }
 
                 }
@@ -107,7 +107,7 @@ namespace Vendita.HubMisureEE.Services
                 }
                 catch (Exception ex)
                 {
-                    HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/Inserimento nomi nel lusso", ex.Message, stringConnect);
+                    HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/Inserimento nomi nel flusso", ex.Message, stringConnect);
                 }
             }
             return flusso;

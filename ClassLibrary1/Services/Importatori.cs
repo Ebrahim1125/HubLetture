@@ -2,6 +2,7 @@ using log4net;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
+using static System.Net.WebRequestMethods;
 
 namespace Vendita.HubMisureEE.Services
 {
@@ -9,9 +10,9 @@ namespace Vendita.HubMisureEE.Services
     {
         public static void Importa(string folderSorgente, string folderLavoro, string stringaConnessione)
         {
-            int IdLetture = 0;
+            int IdFile = 0;
 
-            List<string> flusso = ZipExtractorService.UnloadZip(folderSorgente, folderLavoro, stringaConnessione, out IdLetture);
+            List<string> flusso = ZipExtractorService.UnloadZip(folderSorgente, folderLavoro, stringaConnessione, out IdFile);
 
             foreach (string Doc in flusso)
             {
@@ -19,7 +20,7 @@ namespace Vendita.HubMisureEE.Services
 
                 doc.Load(Path.Combine(folderLavoro, Doc));
 
-                CaricaXML.LoadXml(doc, stringaConnessione, folderLavoro, IdLetture++);
+                CaricaXML.LoadXml(doc, stringaConnessione, folderLavoro, IdFile++);
             }
         }
     }
