@@ -14,8 +14,8 @@ namespace Vendita.HubMisureEE.Services
                 " JOIN dbo.Curve AS c ON l.Id = c.IdLetture WHERE l.PIvaUtente = @PIvaUtente " +
                 " AND l.PIvaDistributore = @PIvaDistributore" +
                 " AND l.Pod = @Pod " +
-                " AND (l.DataMisura = @DataMisura " +
-                " OR l.DataMisura = DATEFROMPARTS(YEAR(l.MeseAnno), MONTH(l.MeseAnno), c.Giorno))";
+                " OR l.DataMisura = DATEFROMPARTS(YEAR(l.MeseAnno), MONTH(l.MeseAnno), c.Giorno))" + 
+                " AND (l.DataMisura = @DataMisura";
             using (SqlCommand com = new SqlCommand(query, connessione))
             {
                 com.Parameters.Add("@PIvaUtente", SqlDbType.VarChar).Value = PIvaUtente;
