@@ -327,26 +327,26 @@ namespace Vendita.HubMisureEE.Services
                 {
                     HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow quartini per il POD {pod.Pod}: {ex.Message}", connessione);
                 }
-
-                try
-                {
-                    DataRow drFile = FileXml.NewRow();
-                    drFile["DataIns"] = DateTime.Now;
-                    drFile["NomeFile"] = fileName;
-                    drFile["FileXml"] = "";
-                    drFile["Lavorato"] = true;
-                    FileXml.Rows.Add(drFile);
-                }
-                catch (Exception ex)
-                {
-                    HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow FileXml per il file {fileName}: {ex.Message}", connessione);
-                }
-                //Scrittura col bulk
-                Bulk2DB(QE, "Curve", connessione);
-                Bulk2DB(dtLetture, "Letture", connessione);
-                Bulk2DB(FileXml, "FileXml", connessione);
-                FileLavorato(FolderLavoro, fileName, connessione);
             }
+
+            try
+            {
+                DataRow drFile = FileXml.NewRow();
+                drFile["DataIns"] = DateTime.Now;
+                drFile["NomeFile"] = fileName;
+                drFile["FileXml"] = "";
+                drFile["Lavorato"] = true;
+                FileXml.Rows.Add(drFile);
+            }
+            catch (Exception ex)
+            {
+                HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow FileXml per il file {fileName}: {ex.Message}", connessione);
+            }
+            //Scrittura col bulk
+            Bulk2DB(QE, "Curve", connessione);
+            Bulk2DB(dtLetture, "Letture", connessione);
+            Bulk2DB(FileXml, "FileXml", connessione);
+            FileLavorato(FolderLavoro, fileName, connessione);
         }
 
         // Lavorazione del flusso Rettifico e salvataggio su DB
@@ -547,7 +547,7 @@ namespace Vendita.HubMisureEE.Services
                 dr["Pod"] = pod.Pod;
                 nPod = pod.Pod;
                 dr["MeseAnno"] = ParseMonthYearOrDbNull(pod.MeseAnno);
-                
+
                 dr["DataMisura"] = ParseDateOrDbNull(pod?.DataMisura);
 
                 DataMisure = dr["DataMisura"];
