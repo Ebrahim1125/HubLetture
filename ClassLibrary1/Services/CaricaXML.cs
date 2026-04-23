@@ -2,6 +2,7 @@
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -38,9 +39,28 @@ namespace Vendita.HubMisureEE.Services
                 using (SqlConnection connessione = new SqlConnection(connectionString))
                 {
                     connessione.Open();
+                    string fileName = string.Empty;
+                    try {
+                        fileName = Path.GetFileName(Doc.BaseURI) ?? string.Empty;
+                        fileName = fileName.ToUpper();
+                    } catch (FileNotFoundException fn) 
+                    {
+                        HubLog.SaveLog2DB("Error", "CaricaXML.LoadXml(FileNotFound)", fn.Message, connessione);
+                    }
+                    catch (FileLoadException fl)
+                    {
+                        HubLog.SaveLog2DB("Error", "CaricaXML.LoadXml(FileLoad)", fl.Message, connessione);
+                    }
+                    catch (FileFormatException ff)
+                    {
+                        HubLog.SaveLog2DB("Error", "CaricaXML.LoadXml(FileFormat)", ff.Message, connessione);
+                    }
+                    catch (Exception ex)
+                    {
+                        HubLog.SaveLog2DB("Error", "CaricaXML.LoadXml(UnknownError)", ex.Message, connessione);
+                    }
 
-                    string fileName = Path.GetFileName(Doc.BaseURI) ?? string.Empty;
-                    fileName = fileName.ToUpper();
+
 
 
 
@@ -57,6 +77,11 @@ namespace Vendita.HubMisureEE.Services
                         {
                             flussoGenerico = serializer.Deserialize(reader);
                         }
+                    }
+                    catch (SerializationException se)
+                    {
+                        HubLog.SaveLog2DB("Error", "CaricaXml.Deserialize", $"Errore durante la deserializzazione del file {fileName}: {se}", connessione);
+                        return;
                     }
                     catch (Exception ex)
                     {
@@ -83,7 +108,7 @@ namespace Vendita.HubMisureEE.Services
                     }
                     catch (Exception ex)
                     {
-                        HubLog.SaveLog2DB("Error", "CaricaXml.SaveFlusso2DB", $"Errore durante il salvataggio del file {fileName}: {ex}", connessione);
+                        HubLog.SaveLog2DB("Error", "CaricaXml.SaveFlusso2DB", $"Errore durante la lavorazione del file {fileName}: {ex}", connessione);
                         return;
                     }
                 }

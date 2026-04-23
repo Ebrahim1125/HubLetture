@@ -56,9 +56,12 @@ namespace Vendita.HubMisureEE.Services
                     com.ExecuteNonQuery();
                 }
             }
+            catch (SqlException ex) {
+                HubLog.SaveLog2DB("Error", "ControllaRettifica.Rettifica", ex.Message, connessione);
+            }
             catch (Exception ex)
             {
-                HubLog.SaveLog2DB("Error", "ControllaRettifica.Rettifica", $"Errore durante l'aggiornamento della tabella {NomeTabella} per l'IdFile {Id}: {ex.Message}", connessione);
+                HubLog.SaveLog2DB("Error", "ControllaRettifica.Rettifica", ex.Message, connessione);
             }
         }
     }
