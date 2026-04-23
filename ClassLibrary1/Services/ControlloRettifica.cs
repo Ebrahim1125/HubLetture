@@ -24,8 +24,6 @@ namespace Vendita.HubMisureEE.Services
                     com.Parameters.Add("@PIvaDistributore", SqlDbType.VarChar).Value = PIvaDistributore;
                     com.Parameters.Add("@Pod", SqlDbType.VarChar).Value = Pod;
                     com.Parameters.Add("@DataMisura", SqlDbType.Date).Value = DataMisure;
-                    //IdFileXml = com.ExecuteNonQuery();
-                    //IdFileXml = (int)com.ExecuteScalar();
                     IdFileXml = Convert.ToInt32(com.ExecuteScalar());
                 }
                 if (IdFileXml != 0)
@@ -56,7 +54,8 @@ namespace Vendita.HubMisureEE.Services
                     com.ExecuteNonQuery();
                 }
             }
-            catch (SqlException ex) {
+            catch (SqlException ex)
+            {
                 HubLog.SaveLog2DB("Error", "ControllaRettifica.Rettifica", ex.Message, connessione);
             }
             catch (Exception ex)

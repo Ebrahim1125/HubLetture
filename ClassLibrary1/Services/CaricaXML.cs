@@ -22,7 +22,8 @@ namespace Vendita.HubMisureEE.Services
 
             return sigleRettifica.Any(s => fileName.Contains(s));
         }
-        public static void LoadXml(XmlDocument Doc, string connectionString, string FolderLavoro, int IdFile) { 
+        public static void LoadXml(XmlDocument Doc, string connectionString, string FolderLavoro, int IdFile)
+        {
             if (Doc == null)
             {
                 HubLog.SaveLog2DB("Error", "CaricaXml.LoadXml", "XmlDocument is null", connectionString);
@@ -40,10 +41,12 @@ namespace Vendita.HubMisureEE.Services
                 {
                     connessione.Open();
                     string fileName = string.Empty;
-                    try {
+                    try
+                    {
                         fileName = Path.GetFileName(Doc.BaseURI) ?? string.Empty;
                         fileName = fileName.ToUpper();
-                    } catch (FileNotFoundException fn) 
+                    }
+                    catch (FileNotFoundException fn)
                     {
                         HubLog.SaveLog2DB("Error", "CaricaXML.LoadXml(FileNotFound)", fn.Message, connessione);
                     }
@@ -59,10 +62,6 @@ namespace Vendita.HubMisureEE.Services
                     {
                         HubLog.SaveLog2DB("Error", "CaricaXML.LoadXml(UnknownError)", ex.Message, connessione);
                     }
-
-
-
-
 
                     bool isPeriodica = !IsRettifica(fileName);
                     Type tipoDaUsare = isPeriodica ? typeof(Models.Periodico.FlussoMisure) : typeof(Models.Rettifica.FlussoMisure);
