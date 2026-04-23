@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -152,6 +152,10 @@ namespace Vendita.HubMisureEE.Services
             FileXml.Columns.Add("Lavorato", typeof(bool));
 
             FileXml.PrimaryKey = new DataColumn[] { FileXml.Columns["Id"] };
+
+
+
+
 
             string piVaUtente = "";
             string piVaDistributore = "";
@@ -469,6 +473,8 @@ namespace Vendita.HubMisureEE.Services
             FileXml.Columns.Add("Lavorato", typeof(bool));
 
             //FileXml.PrimaryKey = new DataColumn[] { FileXml.Columns["Id"] };
+
+
 
             string piVaUtente = "";
             string piVaDistributore = "";

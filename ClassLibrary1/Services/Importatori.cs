@@ -13,13 +13,11 @@ namespace Vendita.HubMisureEE.Services
             int IdFile = 0;
 
             List<string> flusso = ZipExtractorService.UnloadZip(folderSorgente, folderLavoro, stringaConnessione, out IdFile);
-
             foreach (string Doc in flusso)
+
             {
                 XmlDocument doc = new XmlDocument();
-
                 doc.Load(Path.Combine(folderLavoro, Doc));
-
                 CaricaXML.LoadXml(doc, stringaConnessione, folderLavoro, IdFile++);
             }
         }

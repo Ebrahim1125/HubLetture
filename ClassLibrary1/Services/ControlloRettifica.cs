@@ -45,14 +45,18 @@ namespace Vendita.HubMisureEE.Services
         }
         private static void Rettifica(string NomeTabella, int Id, SqlConnection connessione)
         {
-            string query = $"UPDATE {NomeTabella} SET Rettificato=@Rettificato WHERE IdFile=@IdFile";
-            using (SqlCommand com = new SqlCommand(query, connessione))
+            try
             {
-                com.Parameters.Add("@IdFile", SqlDbType.Int).Value = Id;
-                com.Parameters.Add("@Rettificato", SqlDbType.Bit).Value = true;
+                string query = $"UPDATE {NomeTabella} SET Rettificato=@Rettificato WHERE IdFile=@IdFile";
+                using (SqlCommand com = new SqlCommand(query, connessione))
+                {
+                    com.Parameters.Add("@IdFile", SqlDbType.Int).Value = Id;
+                    com.Parameters.Add("@Rettificato", SqlDbType.Bit).Value = true;
 
-                com.ExecuteNonQuery();
+                    com.ExecuteNonQuery();
+                }
             }
+            catch { }
         }
     }
 }
