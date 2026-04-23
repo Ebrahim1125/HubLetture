@@ -7,7 +7,7 @@ namespace Vendita.HubMisureEE.Services
     // La classe ControllaRettifica contiene metodi per verificare se una lettura è stata rettificata e per aggiornare lo stato di rettifica nei database.
     internal class ControllaRettifica
     {
-        public static bool IsRettificato(SqlConnection connessione, string PIvaUtente, string PIvaDistributore, string Pod, DateTime DataMisure)
+        public static bool IsRettificato(SqlConnection connessione, string PIvaUtente, string PIvaDistributore, string Pod, object DataMisure)
         {
             int IdFileXml = 0;
 
