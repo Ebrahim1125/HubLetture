@@ -20,7 +20,7 @@ namespace Vendita.HubMisureEE.Services
             //ESTRAZIONE TIMESTAMP DAL NOME FILE
             string[] arrName = fileName.Split('_');
             string timeStamp = arrName[4];
-            
+
             //PREPARAZIONE DATATABLE
             DataTable dtLetture = new DataTable();
 
@@ -182,7 +182,7 @@ namespace Vendita.HubMisureEE.Services
                 DettaglioMisuraNOv2Type misuraNOv2 = d as DettaglioMisuraNOv2Type;
                 DettaglioConsumoV2Type consumo = d as DettaglioConsumoV2Type;
                 IdLettura++;
-                
+
                 // CREAZIONE DATAROW LETTURE
                 try
                 {
@@ -289,7 +289,7 @@ namespace Vendita.HubMisureEE.Services
                 {
                     HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow letture per il POD {pod.Pod}: {ex.Message}", connessione);
                 }
-                
+
                 // CREAZIONE DATAROW QUARTINI
                 try
                 {
@@ -327,26 +327,26 @@ namespace Vendita.HubMisureEE.Services
                 {
                     HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow quartini per il POD {pod.Pod}: {ex.Message}", connessione);
                 }
-
-                try
-                {
-                    DataRow drFile = FileXml.NewRow();
-                    drFile["DataIns"] = DateTime.Now;
-                    drFile["NomeFile"] = fileName;
-                    drFile["FileXml"] = "";
-                    drFile["Lavorato"] = true;
-                    FileXml.Rows.Add(drFile);
-                }
-                catch (Exception ex)
-                {
-                    HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow FileXml per il file {fileName}: {ex.Message}", connessione);
-                }
-                //Scrittura col bulk
-                Bulk2DB(QE, "Curve", connessione);
-                Bulk2DB(dtLetture, "Letture", connessione);
-                Bulk2DB(FileXml, "FileXml", connessione);
-                FileLavorato(FolderLavoro, fileName, connessione);
             }
+
+            try
+            {
+                DataRow drFile = FileXml.NewRow();
+                drFile["DataIns"] = DateTime.Now;
+                drFile["NomeFile"] = fileName;
+                drFile["FileXml"] = "";
+                drFile["Lavorato"] = true;
+                FileXml.Rows.Add(drFile);
+            }
+            catch (Exception ex)
+            {
+                HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow FileXml per il file {fileName}: {ex.Message}", connessione);
+            }
+            //Scrittura col bulk
+            Bulk2DB(QE, "Curve", connessione);
+            Bulk2DB(dtLetture, "Letture", connessione);
+            Bulk2DB(FileXml, "FileXml", connessione);
+            FileLavorato(FolderLavoro, fileName, connessione);
         }
 
         // Lavorazione del flusso Rettifico e salvataggio su DB
@@ -499,7 +499,7 @@ namespace Vendita.HubMisureEE.Services
             string codContrDisp = "";
             string codiceFlusso = FlussoRettifica.CodFlusso.ToString();
             string nPod = "";
-            DateTime DataMisure = new DateTime();
+            object DataMisure = new object();
 
             // PRELIEVO IDENTIFICATIVI FLUSSO (PIvaUtente, PIvaDistributore, CodContrDisp)
             for (int i = 0; i < FlussoRettifica.IdentificativiFlusso.Items.Length; i++)
@@ -547,17 +547,19 @@ namespace Vendita.HubMisureEE.Services
                 dr["Pod"] = pod.Pod;
                 nPod = pod.Pod;
                 dr["MeseAnno"] = ParseMonthYearOrDbNull(pod.MeseAnno);
-                DataMisure = (DateTime)ParseDateOrDbNull(pod?.DataMisura);
+
                 dr["DataMisura"] = ParseDateOrDbNull(pod?.DataMisura);
+
+                DataMisure = dr["DataMisura"];
 
                 dr["DataRilevazione"] = ParseDateOrDbNull(pod.DataRilevazione);
                 dr["DataPrest"] = ParseDateOrDbNull(pod.DataPrest);
                 dr["TipoRettifica"] = tipoRettifica ?? (object)DBNull.Value;
                 dr["Motivazione"] = pod?.Motivazione.ToString().Replace("Item", "0") ?? (object)DBNull.Value;
                 dr["CodPrat_SII"] = pod.CodPrat_SII ?? (object)DBNull.Value;
-                dr["Trattamento"] = (pod.DatiPdp?.Trattamento.ToString().Length > 1) ? pod.DatiPdp.Trattamento.ToString() : (object)pod.DatiPdp?.Trattamento ?? DBNull.Value;
-                dr["Forfait"] = (pod.DatiPdp?.Forfait.ToString().Length > 2) ? pod.DatiPdp.Forfait.ToString() : (object)pod.DatiPdp?.Forfait ?? DBNull.Value;
-                dr["GruppoMis"] = (pod.DatiPdp?.GruppoMis.ToString().Length > 2) ? pod.DatiPdp.GruppoMis.ToString() : (object)pod.DatiPdp?.GruppoMis ?? DBNull.Value;
+                dr["Trattamento"] = (object)pod.DatiPdp?.Trattamento ?? DBNull.Value;
+                dr["Forfait"] = (object)pod.DatiPdp?.Forfait ?? DBNull.Value;
+                dr["GruppoMis"] = (object)pod.DatiPdp?.GruppoMis ?? DBNull.Value;
                 dr["Tensione"] = (object)pod.DatiPdp?.Tensione ?? DBNull.Value;
                 dr["Ka"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.DatiPdp, "Ka")?.ToString());
                 dr["Kr"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.DatiPdp, "Kr")?.ToString());
@@ -680,6 +682,7 @@ namespace Vendita.HubMisureEE.Services
                     MappaQuartini(QE, IdFile, IdLettura, "Erc", rfov2.Erc);
                     MappaQuartini(QE, IdFile, IdLettura, "Eri", rfov2.Eri);
                 }
+
                 ControllaRettifica.IsRettificato(connessione, piVaUtente, piVaDistributore, nPod, DataMisure);
             }
 
