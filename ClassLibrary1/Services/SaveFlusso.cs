@@ -11,14 +11,17 @@ namespace Vendita.HubMisureEE.Services
 {
     internal class SaveFlusso
     {
-        public static void SaveFlusso2DB(Models.Periodico.FlussoMisure FlussoMisura, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName)
+        // Lavorazione del flusso Periodico e salvataggio su DB
+        public static void SaveFlusso2DB(FlussoMisure FlussoMisura, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName)
         {
             if (FlussoMisura == null || FlussoMisura.DatiPod == null || FlussoMisura.DatiPod.Length == 0)
                 return;
 
+            //ESTRAZIONE TIMESTAMP DAL NOME FILE
             string[] arrName = fileName.Split('_');
             string timeStamp = arrName[4];
-            // 1. PREPARAZIONE DATATABLE
+            
+            //PREPARAZIONE DATATABLE
             DataTable dtLetture = new DataTable();
 
             dtLetture.Columns.Add("Id", typeof(int));
@@ -114,6 +117,7 @@ namespace Vendita.HubMisureEE.Services
             dtLetture.Columns.Add("TimeStamp", typeof(string));
             dtLetture.PrimaryKey = new DataColumn[] { dtLetture.Columns["ID"] };
 
+            //PRELIEVO ULTIMO ID LETTURA
             int IdLettura = 0;
             string queryId = @"SELECT IDENT_CURRENT('Letture') AS IdLettura";
 
@@ -167,7 +171,7 @@ namespace Vendita.HubMisureEE.Services
                 else if (name == ItemsChoiceType.CodContrDisp) codContrDisp = value;
             }
 
-            // 2. CICLO POD (Riempimento DataRow)
+            // CICLO POD (Riempimento DataRow)
             for (int j = 0; j < FlussoMisura.DatiPod.Length; j++)
             {
                 FlussoMisureDatiPod pod = FlussoMisura.DatiPod[j];
@@ -178,7 +182,8 @@ namespace Vendita.HubMisureEE.Services
                 DettaglioMisuraNOv2Type misuraNOv2 = d as DettaglioMisuraNOv2Type;
                 DettaglioConsumoV2Type consumo = d as DettaglioConsumoV2Type;
                 IdLettura++;
-
+                
+                // CREAZIONE DATAROW LETTURE
                 try
                 {
                     DataRow dr = dtLetture.NewRow();
@@ -189,13 +194,11 @@ namespace Vendita.HubMisureEE.Services
                     dr["CodContrDisp"] = codContrDisp;
                     dr["Pod"] = pod.Pod;
                     dr["MeseAnno"] = ParseMonthYearOrDbNull(pod.MeseAnno);
-
                     dr["DataMisura"] = ParseDateOrDbNull(pod?.DataMisura);
-                    //dr["DataMisura"] = ParseDateOrDbNull(pod?.DataMisura) ?? ParseDataMisure(pod.MeseAnno, Convert.ToInt32($"{d?.Ea[0].Value}"));
                     dr["DataPrest"] = ParseDateOrDbNull(pod?.DataPrest);
                     dr["CodPrat_SII"] = pod.CodPrat_SII ?? "";
 
-                    //Campi Periodico (forse si possono togliere qui)
+                    //Campi Periodico
                     dr["TipoRettifica"] = (d.GetType().GetProperty("TipoRettifica") != null) ? d?.TipoRettifica : DBNull.Value;
                     dr["DataRilevazione"] = (d.GetType().GetProperty("DataRilevazione") != null) ? d?.DataRilevazione : DBNull.Value;
                     dr["Motivazione"] = (d.GetType().GetProperty("Motivazione") != null) ? d?.Motivazione : DBNull.Value;
@@ -286,7 +289,8 @@ namespace Vendita.HubMisureEE.Services
                 {
                     HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow letture per il POD {pod.Pod}: {ex.Message}", connessione);
                 }
-
+                
+                // CREAZIONE DATAROW QUARTINI
                 try
                 {
                     if (pod.Item is DettaglioMisuraPDOv2Type pdo)
@@ -330,7 +334,6 @@ namespace Vendita.HubMisureEE.Services
                     drFile["DataIns"] = DateTime.Now;
                     drFile["NomeFile"] = fileName;
                     drFile["FileXml"] = "";
-                    // drFile["FileXml"] = File.ReadAllText(Path.Combine(FolderLavoro, fileName));
                     drFile["Lavorato"] = true;
                     FileXml.Rows.Add(drFile);
                 }
@@ -345,6 +348,8 @@ namespace Vendita.HubMisureEE.Services
                 FileLavorato(FolderLavoro, fileName, connessione);
             }
         }
+
+        // Lavorazione del flusso Rettifico e salvataggio su DB
         public static void SaveFlusso2DB(Models.Rettifica.FlussoMisure FlussoRettifica, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName)
         {
             if (FlussoRettifica == null || FlussoRettifica.DatiPod == null || FlussoRettifica.DatiPod.Length == 0)
@@ -353,7 +358,7 @@ namespace Vendita.HubMisureEE.Services
             string[] arrName = fileName.Split('_');
             string timeStamp = arrName[4];
 
-            // 1. PREPARAZIONE DATATABLE
+            //PREPARAZIONE DATATABLE
             DataTable dtLetture = new DataTable();
 
             dtLetture.Columns.Add("Id", typeof(int)).AutoIncrement = true;
@@ -450,7 +455,7 @@ namespace Vendita.HubMisureEE.Services
             dtLetture.PrimaryKey = new DataColumn[] { dtLetture.Columns["ID"] };
 
 
-            //va cambiato IdLettura?
+            //PRELIEVO ULTIMO ID LETTURA
             int IdLettura = 0;
 
             string queryId = @"SELECT IDENT_CURRENT('Letture') AS IdLettura";
@@ -461,7 +466,7 @@ namespace Vendita.HubMisureEE.Services
                 IdLettura = Convert.ToInt32(result);
             }
 
-            // 4. tabella CURVE
+            //tabella CURVE
             DataTable QE;
             QE = new DataTable();
             QE.Columns.Add("Id", typeof(int)).AutoIncrement = true;
@@ -489,10 +494,6 @@ namespace Vendita.HubMisureEE.Services
             FileXml.Columns.Add("FileXml", typeof(string));
             FileXml.Columns.Add("Lavorato", typeof(bool));
 
-            //FileXml.PrimaryKey = new DataColumn[] { FileXml.Columns["Id"] };
-
-
-
             string piVaUtente = "";
             string piVaDistributore = "";
             string codContrDisp = "";
@@ -500,6 +501,7 @@ namespace Vendita.HubMisureEE.Services
             string nPod = "";
             DateTime DataMisure = new DateTime();
 
+            // PRELIEVO IDENTIFICATIVI FLUSSO (PIvaUtente, PIvaDistributore, CodContrDisp)
             for (int i = 0; i < FlussoRettifica.IdentificativiFlusso.Items.Length; i++)
             {
                 var name = FlussoRettifica.IdentificativiFlusso.ItemsElementName[i];
@@ -509,15 +511,13 @@ namespace Vendita.HubMisureEE.Services
                 else if (name == Models.Rettifica.ItemsChoiceType.CodContrDisp) codContrDisp = value;
             }
 
-
-
-            // 2. CICLO POD (Riempimento DataRow)
+            // CICLO POD (Riempimento DataRow)
             for (int j = 0; j < FlussoRettifica.DatiPod.Length; j++)
             {
-
                 Models.Rettifica.FlussoMisureDatiPod pod = FlussoRettifica.DatiPod[j];
 
-                // VARIABILE DINAMICA UNICA - come sopra, alcuni campi come EaF1 si chiamano così oppure EaF1int sono in sottoclassi differenti
+                // VARIABILE DINAMICA UNICA - come sopra, alcuni campi come EaF1
+                // si chiamano così oppure EaF1int sono in sottoclassi differenti
                 dynamic d = pod.Item;
 
 
@@ -538,6 +538,7 @@ namespace Vendita.HubMisureEE.Services
 
                 DataRow dr = dtLetture.NewRow();
 
+                //Campi comuni a tutti i POD
                 dr["Id"] = IdLettura;
                 dr["CodFlusso"] = codiceFlusso;
                 dr["PIvaUtente"] = piVaUtente;
@@ -546,7 +547,7 @@ namespace Vendita.HubMisureEE.Services
                 dr["Pod"] = pod.Pod;
                 nPod = pod.Pod;
                 dr["MeseAnno"] = ParseMonthYearOrDbNull(pod.MeseAnno);
-                DataMisure =(DateTime)ParseDateOrDbNull(pod?.DataMisura);
+                DataMisure = (DateTime)ParseDateOrDbNull(pod?.DataMisura);
                 dr["DataMisura"] = ParseDateOrDbNull(pod?.DataMisura);
 
                 dr["DataRilevazione"] = ParseDateOrDbNull(pod.DataRilevazione);
@@ -562,7 +563,7 @@ namespace Vendita.HubMisureEE.Services
                 dr["Kr"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.DatiPdp, "Kr")?.ToString());
                 dr["Kp"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.DatiPdp, "Kp")?.ToString());
 
-                // --- MISURE (GLI ERRORI DI RuntimeBinderException IN GENERE AVVENGONO QUI) ---
+                //misure
                 dr["MisuraEaF1"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EaF1")?.ToString());
                 dr["MisuraEaF2"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EaF2")?.ToString());
                 dr["MisuraEaF3"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EaF3")?.ToString());
@@ -600,7 +601,7 @@ namespace Vendita.HubMisureEE.Services
                 dr["MisuraEriF6"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EriF6")?.ToString());
                 dr["MisuraEriM"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EriM")?.ToString());
                 dr["MisuraErM"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "ErM")?.ToString());
-                // --- Fino a qui
+
                 dr["MisuraEaM"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EaM")?.ToString());
                 dr["MisuraPotM"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "PotM")?.ToString());
 
@@ -697,6 +698,7 @@ namespace Vendita.HubMisureEE.Services
 
             FileLavorato(FolderLavoro, fileName, connessione);
         }
+        // Metodo per mappare i quartini in QE, con gestione dinamica delle proprietà e parsing dei valori
         private static void MappaQuartini(DataTable dt, int IdFile, int IdLettura, string tipo, IEnumerable<object> listaQuartini)
         {
             if (listaQuartini == null) return;
@@ -728,6 +730,8 @@ namespace Vendita.HubMisureEE.Services
                 dt.Rows.Add(row);
             }
         }
+
+        // Metodo generico per scrivere DataTable in DB con SqlBulkCopy
         public static void Bulk2DB(DataTable dtLetture, string nomeTabella, SqlConnection connessione)
         {
             try
@@ -753,6 +757,7 @@ namespace Vendita.HubMisureEE.Services
                 HubLog.SaveLog2DB("INFO", $"Bulk tab:{nomeTabella}", ex.Message, connessione);
             }
         }
+        // Metodi di supporto per parsing e gestione valori nulli
         private static object ParseDateOrDbNull(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -787,33 +792,7 @@ namespace Vendita.HubMisureEE.Services
 
             return DBNull.Value;
         }
-        private static object ParseDataMisure(string value, int DataMisura)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                return DBNull.Value;
 
-            if (DateTime.TryParseExact(
-                value.Trim(),
-                "MM/yyyy",
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.None,
-                out DateTime result))
-            {
-                return new DateTime(result.Year, result.Month, DataMisura);
-            }
-
-            return DBNull.Value;
-        }
-
-        private static object GetPropOrDbNull(object source, string propName)
-        {
-            if (source == null) return DBNull.Value;
-
-            PropertyInfo prop = source.GetType().GetProperty(propName);
-            if (prop == null) return DBNull.Value;
-
-            return prop.GetValue(source) ?? DBNull.Value;
-        }
         private static decimal ParseDecimalOrDbNull(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -824,26 +803,20 @@ namespace Vendita.HubMisureEE.Services
 
             return 0m;
         }
-        private static object ParseDataMisureSafe(string meseAnno, int giorno)
+
+        /* Metodo generico per ottenere il valore di una proprietà da un oggetto,
+        restituendo DBNull.Value se l'oggetto o la proprietà sono null*/
+        private static object GetPropOrDbNull(object source, string propName)
         {
-            if (string.IsNullOrWhiteSpace(meseAnno))
-                return DBNull.Value;
+            if (source == null) return DBNull.Value;
 
-            if (!DateTime.TryParseExact(
-                meseAnno.Trim(),
-                "MM/yyyy",
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.None,
-                out DateTime result))
-            {
-                return DBNull.Value;
-            }
+            PropertyInfo prop = source.GetType().GetProperty(propName);
+            if (prop == null) return DBNull.Value;
 
-            if (giorno < 1 || giorno > DateTime.DaysInMonth(result.Year, result.Month))
-                return DBNull.Value;
-
-            return new DateTime(result.Year, result.Month, giorno);
+            return prop.GetValue(source) ?? DBNull.Value;
         }
+
+        // Metodo per eliminare il file dopo la lavorazione e loggare l'evento
         private static void FileLavorato(string folderLavoro, string namefile, SqlConnection connessione)
         {
             File.Delete(Path.Combine(folderLavoro, namefile));
@@ -851,4 +824,3 @@ namespace Vendita.HubMisureEE.Services
         }
     }
 }
-
