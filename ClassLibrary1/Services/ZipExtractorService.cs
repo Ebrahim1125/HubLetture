@@ -16,7 +16,7 @@ namespace Vendita.HubMisureEE.Services
             string[] zipFiles = null;
             string[] xmlFiles = null;
             string[] allFiles = null;
- 
+
             List<string> flusso = new List<string>();
 
             try
@@ -24,7 +24,6 @@ namespace Vendita.HubMisureEE.Services
                 zipFiles = Directory.GetFiles(inFile, "*.zip");
                 xmlFiles = Directory.GetFiles(inFile, "*.xml");
                 allFiles = zipFiles.Union(xmlFiles).ToArray();
-
 
             }
             catch (FileLoadException ex)
@@ -117,7 +116,7 @@ namespace Vendita.HubMisureEE.Services
         private static bool ControlloNomeFile(string FileName)
         {
             string[] parti = FileName.Split('_');
-            
+
             string[] endName = parti[6].Split('.');
          
             if (endName[1].ToLower() == "xml" && parti[0].Length == 11 && parti[1].Length == 11 && parti[2].Length == 6 && parti[4].Length == 14 && parti[5].Length == 7)
