@@ -682,6 +682,7 @@ namespace Vendita.HubMisureEE.Services
                     MappaQuartini(QE, IdFile, IdLettura, "Erc", rfov2.Erc);
                     MappaQuartini(QE, IdFile, IdLettura, "Eri", rfov2.Eri);
                 }
+
                 ControllaRettifica.IsRettificato(connessione, piVaUtente, piVaDistributore, nPod, DataMisure);
             }
 
