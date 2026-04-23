@@ -179,7 +179,6 @@ namespace Vendita.HubMisureEE.Services
                 // --- VARIABILE DINAMICA - mi sono vista costretta ad usare una variabile dinamica perchè 
                 // le classi da prendere erano tante e con nomi diversi, in questo modo prendo tutto da una sola variabile 
                 dynamic d = pod.Item;
-                DettaglioMisuraNOv2Type misuraNOv2 = d as DettaglioMisuraNOv2Type;
                 DettaglioConsumoV2Type consumo = d as DettaglioConsumoV2Type;
                 IdLettura++;
 
@@ -505,7 +504,7 @@ namespace Vendita.HubMisureEE.Services
             for (int i = 0; i < FlussoRettifica.IdentificativiFlusso.Items.Length; i++)
             {
                 var name = FlussoRettifica.IdentificativiFlusso.ItemsElementName[i];
-                string value = FlussoRettifica.IdentificativiFlusso.Items[i] as string;
+                string value = FlussoRettifica.IdentificativiFlusso.Items[i];
                 if (name == Models.Rettifica.ItemsChoiceType.PIvaUtente) piVaUtente = value;
                 else if (name == Models.Rettifica.ItemsChoiceType.PIvaDistributore) piVaDistributore = value;
                 else if (name == Models.Rettifica.ItemsChoiceType.CodContrDisp) codContrDisp = value;
@@ -519,15 +518,6 @@ namespace Vendita.HubMisureEE.Services
                 // VARIABILE DINAMICA UNICA - come sopra, alcuni campi come EaF1
                 // si chiamano così oppure EaF1int sono in sottoclassi differenti
                 dynamic d = pod.Item;
-
-
-                //Variabili misure
-                var misuraRR = pod.Item as Models.Rettifica.DettaglioMisuraRRType;
-                var misuraRRIntImm = pod.Item as Models.Rettifica.DettaglioMisuraRRIntImmType;
-                var misuraRRInt = pod.Item as Models.Rettifica.DettaglioMisuraRRIntType;
-                var misuraRNR = pod.Item as Models.Rettifica.DettaglioMisuraRNRType;
-                var misuraRSNR = pod.Item as Models.Rettifica.DettaglioMisuraRSNRType;
-                var misuraRNOv2 = pod.Item as Models.Rettifica.DettaglioMisuraRNOv2Type;
 
                 //Variabili Consumo
                 var consumoRv2 = pod.Item as Models.Rettifica.DettaglioConsumoRv2Type;
