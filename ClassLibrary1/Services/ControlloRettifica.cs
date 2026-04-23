@@ -56,7 +56,13 @@ namespace Vendita.HubMisureEE.Services
                     com.ExecuteNonQuery();
                 }
             }
-            catch { }
+            catch (SqlException ex) {
+                HubLog.SaveLog2DB("Error", "ControllaRettifica.Rettifica", ex.Message, connessione);
+            }
+            catch (Exception ex)
+            {
+                HubLog.SaveLog2DB("Error", "ControllaRettifica.Rettifica", ex.Message, connessione);
+            }
         }
     }
 }

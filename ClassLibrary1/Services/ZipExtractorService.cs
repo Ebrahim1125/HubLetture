@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net.Http;
 
 namespace Vendita.HubMisureEE.Services
 {
@@ -62,7 +63,7 @@ namespace Vendita.HubMisureEE.Services
             }
             catch (SqlException ex)
             {
-                HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/Query FileXml", ex.Message, stringConnect);
+                HubLog.SaveLog2DB("Error", "ZipExtractorService/Query FileXml", ex.Message, stringConnect);
             }
 
             foreach (string item in allFiles)
@@ -118,13 +119,14 @@ namespace Vendita.HubMisureEE.Services
             string[] parti = FileName.Split('_');
             
             string[] endName = parti[6].Split('.');
-
+         
             if (endName[1].ToLower() == "xml" && parti[0].Length == 11 && parti[1].Length == 11 && parti[2].Length == 6 && parti[4].Length == 14 && parti[5].Length == 7)
             {
                 return true;
             }
             else
             {
+                
                 return false;
             }
         }
