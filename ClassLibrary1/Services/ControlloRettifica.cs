@@ -4,12 +4,15 @@ using System.Data.SqlClient;
 
 namespace Vendita.HubMisureEE.Services
 {
+    // La classe ControllaRettifica contiene metodi per verificare se una lettura è stata rettificata e per aggiornare lo stato di rettifica nei database.
     internal class ControllaRettifica
     {
         public static bool IsRettificato(SqlConnection connessione, string PIvaUtente, string PIvaDistributore, string Pod, DateTime DataMisure)
         {
             int IdFileXml = 0;
 
+            // La query SQL seleziona l'IdFile dalla tabella Letture, unendo con la tabella Curve,
+            // filtrando per i parametri specificati (PIvaUtente, PIvaDistributore, Pod, DataMisura) e verificando se il CodFlusso inizia con 'P'.
             try
             {
                 string query = "SELECT l.IdFile FROM Letture l" +
@@ -41,6 +44,8 @@ namespace Vendita.HubMisureEE.Services
                 return false;
             }
         }
+
+        // Il metodo Rettifica aggiorna il campo Rettificato a true per un record specifico identificato da IdFile nella tabella specificata.
         private static void Rettifica(string NomeTabella, int Id, SqlConnection connessione)
         {
             try

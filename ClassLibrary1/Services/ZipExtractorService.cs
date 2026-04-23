@@ -10,6 +10,10 @@ namespace Vendita.HubMisureEE.Services
 {
     public class ZipExtractorService
     {
+        //Funzione per estrarre i file xml da una cartella di input, che può contenere sia file zip che file xml, e copiarli in una cartella di output.
+        //La funzione restituisce una lista dei nomi dei file xml estratti o copiati.
+        //Inoltre, la funzione controlla se i file xml rispettano un determinato formato di nome e se sono già presenti nel database prima di estrarli o copiarli.
+        //In caso di errori durante l'estrazione o la copia dei file, viene registrato un log nel database.
         public static List<string> UnloadZip(string inFile, string outFile, string stringConnect, out int IdFile)
         {
             string[] zipFiles = null;
@@ -18,6 +22,7 @@ namespace Vendita.HubMisureEE.Services
 
             List<string> flusso = new List<string>();
 
+            //Caricamento dei file zip e xml presenti nella cartella di input, con gestione degli errori.
             try
             {
                 zipFiles = Directory.GetFiles(inFile, "*.zip");
@@ -50,7 +55,7 @@ namespace Vendita.HubMisureEE.Services
                 using (SqlConnection conn = new SqlConnection(stringConnect))
                 {
                     conn.Open();
-
+                    //Caricamento dei nomi dei file xml già presenti nel database, con gestione degli errori.
                     using (var FileXmlDb = new SqlDataAdapter("SELECT IdFile, NomeFile, Lavorato FROM FileXml", conn))
                     {
                         FileXmlDb.Fill(FileXml);
@@ -68,7 +73,7 @@ namespace Vendita.HubMisureEE.Services
             {
                 try
                 {
-
+                    //Controllo se il file è un zip o un xml e se rispetta i criteri di nome e presenza nel database, con gestione degli errori.
                     if (item.EndsWith(".zip"))
                     {
                         using (FileStream fileStream = new FileStream(item, FileMode.Open, FileAccess.Read))
@@ -112,6 +117,7 @@ namespace Vendita.HubMisureEE.Services
             return flusso;
         }
 
+        //Funzione per controllare se il nome del file xml rispetta un determinato formato, con gestione degli errori.
         private static bool ControlloNomeFile(string FileName)
         {
             string[] parti = FileName.Split('_');
