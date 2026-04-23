@@ -20,7 +20,7 @@ namespace Vendita.HubMisureEE.Services
             //ESTRAZIONE TIMESTAMP DAL NOME FILE
             string[] arrName = fileName.Split('_');
             string timeStamp = arrName[4];
-
+            
             //PREPARAZIONE DATATABLE
             DataTable dtLetture = new DataTable();
 
@@ -182,7 +182,7 @@ namespace Vendita.HubMisureEE.Services
                 DettaglioMisuraNOv2Type misuraNOv2 = d as DettaglioMisuraNOv2Type;
                 DettaglioConsumoV2Type consumo = d as DettaglioConsumoV2Type;
                 IdLettura++;
-
+                
                 // CREAZIONE DATAROW LETTURE
                 try
                 {
@@ -289,7 +289,7 @@ namespace Vendita.HubMisureEE.Services
                 {
                     HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow letture per il POD {pod.Pod}: {ex.Message}", connessione);
                 }
-
+                
                 // CREAZIONE DATAROW QUARTINI
                 try
                 {
@@ -327,26 +327,26 @@ namespace Vendita.HubMisureEE.Services
                 {
                     HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow quartini per il POD {pod.Pod}: {ex.Message}", connessione);
                 }
-            }
 
-            try
-            {
-                DataRow drFile = FileXml.NewRow();
-                drFile["DataIns"] = DateTime.Now;
-                drFile["NomeFile"] = fileName;
-                drFile["FileXml"] = "";
-                drFile["Lavorato"] = true;
-                FileXml.Rows.Add(drFile);
+                try
+                {
+                    DataRow drFile = FileXml.NewRow();
+                    drFile["DataIns"] = DateTime.Now;
+                    drFile["NomeFile"] = fileName;
+                    drFile["FileXml"] = "";
+                    drFile["Lavorato"] = true;
+                    FileXml.Rows.Add(drFile);
+                }
+                catch (Exception ex)
+                {
+                    HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow FileXml per il file {fileName}: {ex.Message}", connessione);
+                }
+                //Scrittura col bulk
+                Bulk2DB(QE, "Curve", connessione);
+                Bulk2DB(dtLetture, "Letture", connessione);
+                Bulk2DB(FileXml, "FileXml", connessione);
+                FileLavorato(FolderLavoro, fileName, connessione);
             }
-            catch (Exception ex)
-            {
-                HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow FileXml per il file {fileName}: {ex.Message}", connessione);
-            }
-            //Scrittura col bulk
-            Bulk2DB(QE, "Curve", connessione);
-            Bulk2DB(dtLetture, "Letture", connessione);
-            Bulk2DB(FileXml, "FileXml", connessione);
-            FileLavorato(FolderLavoro, fileName, connessione);
         }
 
         // Lavorazione del flusso Rettifico e salvataggio su DB
