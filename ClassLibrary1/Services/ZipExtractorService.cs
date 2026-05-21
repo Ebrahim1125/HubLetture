@@ -122,17 +122,35 @@ namespace Vendita.HubMisureEE.Services
         {
             string[] parti = FileName.Split('_');
 
-            string[] endName = parti[6].Split('.');
+            string[] endName = "";
 
-            if (endName[1].ToLower() == "xml" && parti[0].Length == 11 && parti[1].Length == 11 && parti[2].Length == 6 && parti[4].Length == 14 && parti[5].Length == 7)
+            if(parti.Length ==6)
             {
-                return true;
-            }
-            else
-            {
+                endName = parti[6].Split('.');
+                if (endName[1].ToLower() == "xml" && parti[0].Length == 11 && parti[1].Length == 11 && parti[2].Length == 6 && parti[4].Length == 14 && parti[5].Length == 7)
+                    {
+                        return true;
+                    }
+                else
+                    {
 
                 return false;
             }
+            }if(parti.Length ==7)
+            {
+                endName = parti[7].Split('.');
+                if (endName[1].ToLower() == "xml" && 10 <= parti[0].Length <= 14 && parti[1].Length == 11 && parti[2].Length == 6 && parti[4].Length == 14 && parti[5].Length == 7)
+                    {
+                        return true;
+                    }
+                else
+                    {
+
+                        return false;
+                    }
+            }
+
+            
         }
     }
 }
