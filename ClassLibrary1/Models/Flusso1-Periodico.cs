@@ -11,7 +11,7 @@
 using System.Xml.Serialization;
 
 namespace Vendita.HubMisureEE.Models.Periodico
-{
+{ }
 
     // 
     // Codice sorgente generato automaticamente da xsd, versione=4.8.3928.0.

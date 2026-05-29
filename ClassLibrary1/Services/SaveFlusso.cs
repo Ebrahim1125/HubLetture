@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using Vendita.HubMisureEE.Models.Periodico;
+using Vendita.HubMisureEE.Models.Rettifica;
 
 namespace Vendita.HubMisureEE.Services
 {
@@ -20,6 +21,265 @@ namespace Vendita.HubMisureEE.Services
             //ESTRAZIONE TIMESTAMP DAL NOME FILE
             string[] arrName = fileName.Split('_');
             string timeStamp = arrName[4];
+
+            string CodFlusso = FlussoMisura.CodFlusso.ToString();
+
+            IdentificativiFlussoType identificativi = new IdentificativiFlussoType();
+           
+            string[] ict= identificativi.Items;
+
+            string CodContrDisp = ict[0];
+            string PIvaDistributore = ict[1];
+            string PIvaGdRInst = ict[2];
+            string PIvaGdRMis = ict[3];
+            string PIvaUtente = ict[4];
+            string PivaGdRAlt = ict[5];
+
+            FlussoMisureDatiPod[] FDP = FlussoMisura.DatiPod;
+            
+            FDP.Initialize();
+
+            DettaglioConsumoV2Type consumo = new DettaglioConsumoV2Type();
+            consumo.PotM;
+            consumo.EaM;
+            consumo.DataInizioPeriodo;
+
+            DettaglioMisuraGenericoType dettaglio = new DettaglioMisuraGenericoType();
+            dettaglio.PotMax;
+            dettaglio.Raccolta;
+            dettaglio.Validato;
+            dettaglio.CausaOstativa;
+            dettaglio.TipoCp;
+            dettaglio.TipoDato;
+
+            DettaglioMisuraNOv2Type no = new DettaglioMisuraNOv2Type();
+            no.CausaOstativa;
+            no.EaF1;
+            no.EaF2;
+            no.EaF3;
+            no.EaM;
+            no.ErF1;
+            no.ErF2;
+            no.ErF3;
+            no.ErM;
+            no.ErcF1;
+            no.ErcF2;
+            no.ErcF3;
+            no.ErcM;
+            no.EriF1;
+            no.EriF2;
+            no.EriF3;
+            no.EriM;
+            no.PotF1;
+            no.PotF2;
+            no.PotF3;
+            no.PotM;
+            no.PotMax;
+            no.Raccolta;
+            no.TipoCp;
+            no.TipoDato;
+            no.Validato;
+
+            DettaglioMisuraPDOv2Type pdo = new DettaglioMisuraPDOv2Type();
+
+            pdo.CausaOstativa;
+            pdo.Ea;     
+            pdo.Er;         
+            pdo.Erc;   
+            pdo.Eri;
+            pdo.PotMax;
+            pdo.Raccolta;
+            pdo.TipoCp;
+            pdo.TipoDato;
+            pdo.Validato;
+
+            DettaglioMisuraPEin2GType pein2g = new DettaglioMisuraPEin2GType();
+            pein2g.CausaOstativa;
+            pein2g.Ea;
+            pein2g.PotMax;
+            pein2g.Raccolta;
+            pein2g.TipoCp;
+            pein2g.TipoDato;
+            pein2g.Validato;
+
+            DettaglioMisuraPEinType pein = new DettaglioMisuraPEinType();
+            pein.CausaOstativa;
+            pein.Ea;
+            pein.PotMax;
+            pein.Raccolta;
+            pein.TipoCp;
+            pein.TipoDato;
+            pein.Validato;
+
+            DettaglioMisuraPeriodico2GNRType gr = new DettaglioMisuraPeriodico2GNRType();
+            gr.CausaOstativa;
+            gr.Ea;
+            gr.EaF1;
+            gr.EaF2;
+            gr.EaF3;
+            gr.EaF4;
+            gr.EaF5;
+            gr.EaF6;
+            gr.Er;
+            gr.ErF1;
+            gr.ErF2;
+            gr.ErF3;
+            gr.ErF4;
+            gr.ErF5;
+            gr.ErF6;
+            gr.ErcF1;
+            gr.ErcF2;
+            gr.ErcF3;
+            gr.ErcF4;
+            gr.ErcF5;
+            gr.ErcF6;
+            gr.Erc;
+            gr.EriF1;
+            gr.EriF2;
+            gr.EriF3;
+            gr.EriF4;
+            gr.EriF5;
+            gr.EriF6;
+            gr.Eri;
+            gr.PotF1;
+            gr.PotF2;
+            gr.PotF3;
+            gr.PotF4;
+            gr.PotF5;
+            gr.PotF6;
+            gr.PotMax;
+            gr.Raccolta;
+            gr.TipoCp;
+            gr.TipoDato;
+            gr.Validato;
+
+            DettaglioMisuraPeriodico2GORType gor = new DettaglioMisuraPeriodico2GORType();
+            gor.CausaOstativa;
+            gor.Ea;
+            gor.EaF1;
+            gor.EaF2;
+            gor.EaF3;
+            gor.EaF4;
+            gor.EaF5;
+            gor.EaF6;
+            gor.Er;
+            gor.ErF1;
+            gor.ErF2;
+            gor.ErF3;
+            gor.ErF4;
+            gor.ErF5;
+            gor.ErF6;
+            gor.ErcF1;
+            gor.ErcF2;
+            gor.ErcF3;
+            gor.ErcF4;
+            gor.ErcF5;
+            gor.ErcF6;
+            gor.Erc;
+            gor.EriF1;
+            gor.EriF2;
+            gor.EriF3;
+            gor.EriF4;
+            gor.EriF5;
+            gor.EriF6;
+            gor.Eri;
+            gor.PotF1;
+            gor.PotF2;
+            gor.PotF3;
+            gor.PotF4;
+            gor.PotF5;
+            gor.PotF6;
+            gor.PotMax;
+            gor.Raccolta;
+            gor.TipoCp;
+            gor.TipoDato;
+            gor.Validato;
+
+            DettaglioMisuraPeriodico2GRType gr2 = new DettaglioMisuraPeriodico2GRType();
+            gr2.CausaOstativa;
+            gr2.Ea;
+            gr2.EaF1;
+            gr2.EaF2;
+            gr2.EaF3;
+            gr2.EaF4;
+            gr2.EaF5;
+            gr2.EaF6;
+            gr2.Er;
+            gr2.ErF1;
+            gr2.ErF2;
+            gr2.ErF3;
+            gr2.ErF4;
+            gr2.ErF5;
+            gr2.ErF6;
+            gr2.ErcF1;
+            gr2.ErcF2;
+            gr2.ErcF3;
+            gr2.ErcF4;
+            gr2.ErcF5;
+            gr2.ErcF6;
+            gr2.Erc;
+            gr2.EriF1;
+            gr2.EriF2;
+            gr2.EriF3;
+            gr2.EriF4;
+            gr2.EriF5;
+            gr2.EriF6;
+            gr2.Eri;
+            gr2.PotF1;
+            gr2.PotF2;
+            gr2.PotF3;
+            gr2.PotF4;
+            gr2.PotF5;
+            gr2.PotF6;
+            gr2.PotMax;
+            gr2.Raccolta;
+            gr2.TipoCp;
+            gr2.TipoDato;
+            gr2.Validato;
+
+            DettaglioMisuraSNM2GType snm2g = new DettaglioMisuraSNM2GType();
+            snm2g.CausaOstativa;            
+            snm2g.EaF1;
+            snm2g.EaF2;
+            snm2g.EaF3;
+            snm2g.EaF4;
+            snm2g.EaF5;
+            snm2g.EaF6;            
+            snm2g.ErF1;
+            snm2g.ErF2;
+            snm2g.ErF3;
+            snm2g.ErF4;
+            snm2g.ErF5;
+            snm2g.ErF6;
+            snm2g.ErcF1;
+            snm2g.ErcF2;
+            snm2g.ErcF3;
+            snm2g.ErcF4;
+            snm2g.ErcF5;
+            snm2g.ErcF6;
+            snm2g.EriF1;
+            snm2g.EriF2;
+            snm2g.EriF3;
+            snm2g.EriF4;
+            snm2g.EriF5;
+            snm2g.EriF6;
+            snm2g.PotF1;
+            snm2g.PotF2;
+            snm2g.PotF3;
+            snm2g.PotF4;
+            snm2g.PotF5;
+            snm2g.PotF6;
+            snm2g.PotMax;
+            snm2g.Raccolta;
+            snm2g.TipoCp;
+            snm2g.TipoDato;
+            snm2g.Validato;
+
+
+            
+
+
+
 
             //PREPARAZIONE DATATABLE
             DataTable dtLetture = new DataTable();
