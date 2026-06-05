@@ -5,14 +5,16 @@ using System.Data.SqlClient;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Xml.Serialization;
 using Vendita.HubMisureEE.Models.Periodico;
+using Vendita.HubMisureEE.Models.Rettifica;
 
 namespace Vendita.HubMisureEE.Services
 {
     internal class SaveFlusso
     {
         // Lavorazione del flusso Periodico e salvataggio su DB
-        public static void SaveFlusso2DB(FlussoMisure FlussoMisura, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName)
+        public static void SaveFlusso2DB(Models.Periodico.FlussoMisure FlussoMisura, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName)
         {
             if (FlussoMisura == null || FlussoMisura.DatiPod == null || FlussoMisura.DatiPod.Length == 0)
                 return;
@@ -166,15 +168,15 @@ namespace Vendita.HubMisureEE.Services
             {
                 var name = FlussoMisura.IdentificativiFlusso.ItemsElementName[i];
                 string value = FlussoMisura.IdentificativiFlusso.Items[i];
-                if (name == ItemsChoiceType.PIvaUtente) piVaUtente = value;
-                else if (name == ItemsChoiceType.PIvaDistributore) piVaDistributore = value;
-                else if (name == ItemsChoiceType.CodContrDisp) codContrDisp = value;
+                if (name == Models.Periodico.ItemsChoiceType.PIvaUtente) piVaUtente = value;
+                else if (name == Models.Periodico.ItemsChoiceType.PIvaDistributore) piVaDistributore = value;
+                else if (name == Models.Periodico.ItemsChoiceType.CodContrDisp) codContrDisp = value;
             }
 
             // CICLO POD (Riempimento DataRow)
             for (int j = 0; j < FlussoMisura.DatiPod.Length; j++)
             {
-                FlussoMisureDatiPod pod = FlussoMisura.DatiPod[j];
+                Models.Periodico.FlussoMisureDatiPod pod = FlussoMisura.DatiPod[j];
 
                 // --- VARIABILE DINAMICA - mi sono vista costretta ad usare una variabile dinamica perchè 
                 // le classi da prendere erano tante e con nomi diversi, in questo modo prendo tutto da una sola variabile 
@@ -200,7 +202,7 @@ namespace Vendita.HubMisureEE.Services
                     //Campi Periodico
                     dr["TipoRettifica"] = (d.GetType().GetProperty("TipoRettifica") != null) ? d?.TipoRettifica : DBNull.Value;
                     dr["DataRilevazione"] = (d.GetType().GetProperty("DataRilevazione") != null) ? d?.DataRilevazione : DBNull.Value;
-                    dr["Motivazione"] = (d.GetType().GetProperty("Motivazione") != null) ? d?.Motivazione : DBNull.Value;
+                    dr["Motivazione"] = /* (d.GetType().GetProperty("Motivazione") != null) ? d?.Motivazione : */ DBNull.Value;
                     dr["MisuraRaccolta"] = d?.Raccolta ?? DBNull.Value;
                     dr["MisuraTipoDato"] = d?.TipoDato ?? DBNull.Value;
                     dr["MisuraTipoCp"] = d?.TipoCp ?? DBNull.Value;
@@ -545,7 +547,8 @@ namespace Vendita.HubMisureEE.Services
                 dr["DataRilevazione"] = ParseDateOrDbNull(pod.DataRilevazione);
                 dr["DataPrest"] = ParseDateOrDbNull(pod.DataPrest);
                 dr["TipoRettifica"] = tipoRettifica ?? (object)DBNull.Value;
-                dr["Motivazione"] = pod?.Motivazione.ToString().Replace("Item", "0") ?? (object)DBNull.Value;
+                //dr["Motivazione"] = pod?.Motivazione.ToString().Replace("Item", "0") ?? (object)DBNull.Value;
+                dr["Motivazione"] = GetXmlEnumValue(pod.Motivazione);
                 dr["CodPrat_SII"] = pod.CodPrat_SII ?? (object)DBNull.Value;
                 dr["Trattamento"] = (object)pod.DatiPdp?.Trattamento ?? DBNull.Value;
                 dr["Forfait"] = (object)pod.DatiPdp?.Forfait ?? DBNull.Value;
@@ -814,6 +817,15 @@ namespace Vendita.HubMisureEE.Services
         {
             File.Delete(Path.Combine(folderLavoro, namefile));
             HubLog.SaveLog2DB("INFO", $"File lavorato: {namefile}", "", connessione);
+        }
+        public static string GetXmlEnumValue(MotivazioneType value)
+        {
+            var field = value.GetType().GetField(value.ToString());
+
+            var attr = field?
+                .GetCustomAttribute<XmlEnumAttribute>();
+
+            return attr?.Name; // <-- "1", "2", "3"
         }
     }
 }
