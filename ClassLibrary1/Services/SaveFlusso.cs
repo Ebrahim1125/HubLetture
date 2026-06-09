@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
+using System.Text;
 using System.IO;
 using System.Reflection;
 using System.Xml.Serialization;
 using Vendita.HubMisureEE.Models.Periodico;
 using Vendita.HubMisureEE.Models.Rettifica;
+using Vendita.HubMisureEE.Models.Smis;
 
 namespace Vendita.HubMisureEE.Services
 {
@@ -117,7 +119,7 @@ namespace Vendita.HubMisureEE.Services
             dtLetture.Columns.Add("Valido", typeof(bool));
             dtLetture.Columns.Add("IdFile", typeof(int));
             dtLetture.Columns.Add("TimeStamp", typeof(string));
-            dtLetture.PrimaryKey = new DataColumn[] { dtLetture.Columns["ID"] };
+            dtLetture.PrimaryKey = new DataColumn[] { dtLetture.Columns["Id"] };
 
             //PRELIEVO ULTIMO ID LETTURA
             int IdLettura = 0;
@@ -453,7 +455,7 @@ namespace Vendita.HubMisureEE.Services
             dtLetture.Columns.Add("Valido", typeof(bool));
             dtLetture.Columns.Add("IdFile", typeof(string));
             dtLetture.Columns.Add("TimeStamp", typeof(string));
-            dtLetture.PrimaryKey = new DataColumn[] { dtLetture.Columns["ID"] };
+            dtLetture.PrimaryKey = new DataColumn[] { dtLetture.Columns["Id"] };
 
 
             //PRELIEVO ULTIMO ID LETTURA
@@ -694,6 +696,216 @@ namespace Vendita.HubMisureEE.Services
 
             FileLavorato(FolderLavoro, fileName, connessione);
         }
+
+        public static void SaveFlusso2DB(Models.Smis.FlussoMisure FlussoSmis, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName)
+        {
+            if (FlussoSmis == null || FlussoSmis.DatiPod == null || FlussoSmis.DatiPod.Length == 0)
+                return;
+            string[] arrName = fileName.Split('_');
+            string timeStamp = arrName[4];
+
+            //PREPARAZIONE DATATABLE
+            //LettureSmisEE
+            DataTable dtLettureSmisEE = new DataTable();
+
+            dtLettureSmisEE.Columns.Add("Id", typeof(int)).AutoIncrement = true;
+            dtLettureSmisEE.Columns.Add("CodFlusso", typeof(string));
+            dtLettureSmisEE.Columns.Add("PIvaUtente", typeof(string));
+            dtLettureSmisEE.Columns.Add("PIvaDistributore", typeof(string));
+            dtLettureSmisEE.Columns.Add("CodContrDisp", typeof(string));
+            dtLettureSmisEE.Columns.Add("Pod", typeof(string));
+            dtLettureSmisEE.Columns.Add("Motivazione", typeof(string));
+            dtLettureSmisEE.Columns.Add("TipologiaMisuratoreSmontaggio", typeof(string));
+            dtLettureSmisEE.Columns.Add("DataMisuraSmontaggio", typeof(DateTime));
+            dtLettureSmisEE.Columns.Add("SmontaggioTipoDato", typeof(string));
+            dtLettureSmisEE.Columns.Add("SmontaggioEaF1", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioEaF2", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioEaF3", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioEaF4", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioEaF5", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioEaF6", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioErF1", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioErF2", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioErF3", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioErF4", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioErF5", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioErF6", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioPotF1", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioPotF2", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioPotF3", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioPotF4", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioPotF5", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioPotF6", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioEaM", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioErM", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioPotM", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioErcF1", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioErcF2", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioErcF3", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioErcF4", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioErcF5", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioErcF6", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioErcM", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioEriF1", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioEriF2", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioEriF3", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioEriF4", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioEriF5", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioEriF6", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("SmontaggioEriM", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("TipologiaMisuratoreMontaggio", typeof(string));
+            dtLettureSmisEE.Columns.Add("DataMisuraMontaggio", typeof(DateTime));
+            dtLettureSmisEE.Columns.Add("DataMessaReggime", typeof(DateTime));
+            dtLettureSmisEE.Columns.Add("Tensione", typeof(int));
+            dtLettureSmisEE.Columns.Add("Ka", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("Kr", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("Kp", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MatrAtt", typeof(string));
+            dtLettureSmisEE.Columns.Add("MatrRea", typeof(string));
+            dtLettureSmisEE.Columns.Add("MatrPot", typeof(string));
+            dtLettureSmisEE.Columns.Add("CifreAtt", typeof(string));
+            dtLettureSmisEE.Columns.Add("CifreRea", typeof(string));
+            dtLettureSmisEE.Columns.Add("CifrePot", typeof(string));
+            dtLettureSmisEE.Columns.Add("MontaggioEaF1", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioEaF2", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioEaF3", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioEaF4", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioEaF5", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioEaF6", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioErF1", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioErF2", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioErF3", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioErF4", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioErF5", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioErF6", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioPotF1", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioPotF2", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioPotF3", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioPotF4", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioPotF5", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioPotF6", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioEaM", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioErM", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioPotM", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioErcF1", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioErcF2", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioErcF3", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioErcF4", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioErcF5", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioErcF6", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioErcM", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioEriF1", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioEriF2", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioEriF3", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioEriF4", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioEriF5", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioEriF6", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MontaggioEriM", typeof(decimal));
+            dtLettureSmisEE.Columns.Add("MeseAnno", typeof(DateTime));
+            dtLettureSmisEE.Columns.Add("IdFile", typeof(int));
+            dtLettureSmisEE.Columns.Add("TimeStamp", typeof(string));
+            dtLettureSmisEE.Columns.Add("Valido", typeof(bool));
+            
+
+            dtLettureSmisEE.PrimaryKey = new DataColumn[] { dtLettureSmisEE.Columns["Id"] };
+
+            //PRELIEVO ULTIMO ID LETTURA
+            int IdLettura = 0;
+
+            string queryId = @"SELECT IDENT_CURRENT('LettureSmisEE') AS IdLettura";
+
+            using (SqlCommand cmd = new SqlCommand(queryId, connessione))
+            {
+                object result = cmd.ExecuteScalar();
+                IdLettura = Convert.ToInt32(result);
+            }
+
+            // CICLO POD (Riempimento DataRow)
+            for (int j = 0; j < FlussoSmis.DatiPod.Length; j++)
+            {
+                Models.Smis.FlussoMisureDatiPod pod = FlussoSmis.DatiPod[j];
+                IdLettura++;
+
+                DataRow dr = dtLettureSmisEE.NewRow();
+
+                dr["Id"] = IdLettura;
+                dr["CodFlusso"] = FlussoSmis.CodFlusso;
+                dr["PIvaUtente"] = FlussoSmis.IdentificativiFlusso.PIvaUtente;
+                dr["PIvaDistributore"] = FlussoSmis.IdentificativiFlusso.PIvaDistributore;
+                dr["CodContrDisp"] = FlussoSmis.IdentificativiFlusso.CodContrDisp;
+                dr["Pod"] = pod.Pod;
+                dr["Motivazione"] = GetXmlEnumValue(pod.Motivazione);
+                dr["TipologiaMisuratoreSmontaggio"] = pod.Smontaggio.TipoMisuratore.ToString();
+                dr["DataMisuraSmontaggio"] = pod.Smontaggio.DataMisura;
+                dr["SmontaggioTipoDato"] = pod.Smontaggio.TipoDato;
+
+                //Metodo dinamico 
+                for (int i = 0; i < pod.Smontaggio.Items.Length; i++)
+                {
+                    string nomeColonna = $"Smontaggio{pod.Smontaggio.ItemsElementName[i]}";
+
+                    if (dtLettureSmisEE.Columns.Contains(nomeColonna))
+                    {
+                        dr[nomeColonna] = pod.Smontaggio.Items[i];
+                    }
+                }
+
+                dr["TipologiaMisuratoreMontaggio"] = pod.Montaggio.TipoMisuratore.ToString();
+                dr["DataMisuraMontaggio"] = pod.Montaggio.DataMisura;
+                DateTime data;
+                dr["DataMessaReggime"] = DateTime.TryParse(pod.Montaggio.DataMessaRegime2G, out data)? (object)data: DBNull.Value;
+                dr["Tensione"] = pod.Montaggio.Tensione;
+                dr["Ka"] = ParseDecimalOrDbNull(pod.Montaggio.Ka?.ToString());
+                dr["Kr"] = ParseDecimalOrDbNull(pod.Montaggio.Kr?.ToString());
+                dr["Kp"] = ParseDecimalOrDbNull(pod.Montaggio.Kp?.ToString()); 
+                dr["MatrAtt"] = pod.Montaggio.MatrAtt;
+                dr["MatrRea"] = pod.Montaggio.MatrRea;
+                dr["MatrPot"] = pod.Montaggio.MatrPot;
+                dr["CifreAtt"] = pod.Montaggio.CifreAtt;
+                dr["CifreRea"] = pod.Montaggio.CifreRea;
+                dr["CifrePot"] = pod.Montaggio.CifrePot;
+
+                //metodo dinamico
+                for (int i = 0; i < pod.Montaggio.Items.Length; i++)
+                {
+                    string nomeColonna = $"Montaggio{pod.Montaggio.ItemsElementName[i]}";
+
+                    if (dtLettureSmisEE.Columns.Contains(nomeColonna))
+                    {
+                        dr[nomeColonna] = pod.Montaggio.Items[i];
+                    }
+                }
+
+                dr["MeseAnno"] = DBNull.Value;
+                dr["IdFile"] = IdFile;
+                dr["TimeStamp"] = timeStamp;
+                dr["Valido"] = true;
+
+                dtLettureSmisEE.Rows.Add(dr);
+            }
+
+            //scrittura per Tabella Xml
+            DataTable FileXml = new DataTable();
+            FileXml.Columns.Add("IdFile", typeof(int)).AutoIncrement = true;
+            FileXml.Columns.Add("DataIns", typeof(DateTime));
+            FileXml.Columns.Add("NomeFile", typeof(string)).MaxLength = 250;
+            FileXml.Columns.Add("FileXml", typeof(string));
+            FileXml.Columns.Add("Lavorato", typeof(bool));
+
+            DataRow drFile = FileXml.NewRow();
+            drFile["DataIns"] = DateTime.Now;
+            drFile["NomeFile"] = fileName;
+            drFile["FileXml"] = "";
+            drFile["Lavorato"] = true;
+
+            FileXml.Rows.Add(drFile);
+
+            //Scrittura col Bulk
+            Bulk2DB(dtLettureSmisEE, "LettureSmisEE", connessione);
+            Bulk2DB(FileXml, "FileXml", connessione);
+            FileLavorato(FolderLavoro, fileName, connessione);
+        }
+
         // Metodo per mappare i quartini in QE, con gestione dinamica delle proprietà e parsing dei valori
         private static void MappaQuartini(DataTable dt, int IdFile, int IdLettura, string tipo, IEnumerable<object> listaQuartini)
         {
@@ -737,21 +949,31 @@ namespace Vendita.HubMisureEE.Services
                     using (SqlBulkCopy bulk = new SqlBulkCopy(connessione))
                     {
                         bulk.DestinationTableName = nomeTabella;
+                        var sb = new StringBuilder();
                         foreach (DataColumn col in dtLetture.Columns)
+                        {
                             bulk.ColumnMappings.Add(col.ColumnName, col.ColumnName);
+                            sb.AppendFormat("{0}:{1};", col.ColumnName, col.DataType.Name);
+                        }
+
+                        //foreach (DataColumn c in dtLetture.Columns)
+                        //{
+                        //    object v = dtLetture.Rows[0][c];
+                        //}
 
                         bulk.WriteToServer(dtLetture);
                     }
                 }
             }
-            catch (SqlException se)
-            {
-                HubLog.SaveLog2DB("Error", $"Bulk tab:{nomeTabella}", se.Message, connessione);
-            }
+            //catch (SqlException se)
+            //{
+            //    HubLog.SaveLog2DB("Error", $"Bulk tab:{nomeTabella}", se.Message, connessione);
+            //}
             catch (Exception ex)
             {
                 HubLog.SaveLog2DB("INFO", $"Bulk tab:{nomeTabella}", ex.Message, connessione);
             }
+            
         }
         // Metodi di supporto per parsing e gestione valori nulli
         private static object ParseDateOrDbNull(string value)
@@ -800,6 +1022,8 @@ namespace Vendita.HubMisureEE.Services
             return 0m;
         }
 
+        
+
         /* Metodo generico per ottenere il valore di una proprietà da un oggetto,
         restituendo DBNull.Value se l'oggetto o la proprietà sono null*/
         private static object GetPropOrDbNull(object source, string propName)
@@ -825,7 +1049,16 @@ namespace Vendita.HubMisureEE.Services
             var attr = field?
                 .GetCustomAttribute<XmlEnumAttribute>();
 
-            return attr?.Name; // <-- "1", "2", "3"
+            return attr?.Name; 
+        }
+        public static string GetXmlEnumValue(MotivazioneSostType value)
+        {
+            var field = value.GetType().GetField(value.ToString());
+
+            var attr = field?
+                .GetCustomAttribute<XmlEnumAttribute>();
+
+            return attr?.Name; 
         }
     }
 }
