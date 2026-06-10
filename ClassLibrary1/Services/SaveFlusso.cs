@@ -678,7 +678,7 @@ namespace Vendita.HubMisureEE.Services
                     MappaQuartini(QE, IdFile, IdLettura, "Eri", rfov2.Eri);
                 }
 
-                ControllaRettifica.IsRettificato(connessione, piVaUtente, piVaDistributore, nPod, DataMisure);
+                ControllaRettifica.IsRettificato(connessione, piVaUtente, piVaDistributore, nPod, DataMisure, name.ToString(), connessione);
             }
 
             DataRow drFile = FileXml.NewRow();

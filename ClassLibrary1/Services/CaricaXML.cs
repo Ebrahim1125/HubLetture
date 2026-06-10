@@ -6,6 +6,10 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Xml;
 using System.Xml.Serialization;
+using Vendita.HubMisureEE.Models.EE.Periodico;
+using Vendita.HubMisureEE.Models.EE.Rettifica;
+using Vendita.HubMisureEE.Models.Gas.Periodico;
+using Vendita.HubMisureEE.Models.Gas.Rettifica;
 
 namespace Vendita.HubMisureEE.Services
 {
@@ -14,6 +18,7 @@ namespace Vendita.HubMisureEE.Services
 
         private static bool IsRettifica(string fileName)
         {
+
             string[] sigleRettifica =
             {
                 "RFO2G", "RNO2G", "RIN2G", "RNV2G", "RSN2G",
@@ -23,6 +28,7 @@ namespace Vendita.HubMisureEE.Services
             };
 
             return sigleRettifica.Any(s => fileName.Contains(s));
+
         }
 
        
@@ -113,7 +119,7 @@ namespace Vendita.HubMisureEE.Services
 
                     if (flussoGenerico == null)
                     {
-                        HubLog.SaveLog2DB("Warning", "CaricaXml.Deserialize", $"Deserializzazione nulla per il file {fileName}", connessione);
+                        HubLog.SaveLog2DB("Warning", "CaricaXml.Deserialize", $"FLusso = null - {fileName}", connessione);
                         return;
                     }
 
@@ -121,11 +127,27 @@ namespace Vendita.HubMisureEE.Services
                     {
                         if (isPeriodica)
                         {
-                            SaveFlusso.SaveFlusso2DB((Models.Periodico.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName);
+                            if (flussoGenerico is EE.Periodico)
+                            {
+                                SaveFlusso.SaveFlusso2DB((Models.Periodico.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName);
+                            }
+                            else if (flussoGenerico is Gas.Periodico)
+                            {
+                                SaveFlusso.SaveFlusso2DB((Models.Gas.Periodico.FLussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName);
+                            }
+                            
                         }
                         else if (isRettifica)
                         {
-                            SaveFlusso.SaveFlusso2DB((Models.Rettifica.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName);
+                                 if (flussoGenerico is EE.Periodico)
+                            {
+                                SaveFlusso.SaveFlusso2DB((Models.Rettifica.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName);
+                            }
+                            else if (flussoGenerico is Gas.Periodico)
+                            {
+                                SaveFlusso.SaveFlusso2DB((Models.Gas.Rettifica.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName);
+                            }
+                            
                         }
 
                         else {
