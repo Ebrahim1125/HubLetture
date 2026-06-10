@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace Vendita.HubMisureEE.Services
 {
     public class CaricaXML
     {
+
         private static bool IsRettifica(string fileName)
         {
 
@@ -22,12 +24,14 @@ namespace Vendita.HubMisureEE.Services
                 "RFO2G", "RNO2G", "RIN2G", "RNV2G", "RSN2G",
                 "SMR2G", "RTR2G", "DSR2G", "AVR2G", "VPR2G",
                 "RFO", "RNO", "RIN", "RNV", "RSN",
-                "SMR", "RTR", "DSR", "AVR", "VPR", "INTR"
+                "SMR", "RTR", "DSR", "AVR", "VPR", "INTR" 
             };
 
             return sigleRettifica.Any(s => fileName.Contains(s));
 
         }
+
+       
         public static void LoadXml(XmlDocument Doc, string connectionString, string FolderLavoro, int IdFile)
         {
             if (Doc == null)
@@ -68,9 +72,28 @@ namespace Vendita.HubMisureEE.Services
                     {
                         HubLog.SaveLog2DB("Error", "CaricaXML.LoadXml(UnknownError)", ex.Message, connessione);
                     }
+                    
+                    bool isSmis = IsSmis(fileName);
+                    bool isRettifica = IsRettifica(fileName);
+                    bool isPeriodica = !IsRettifica(fileName) && !IsSmis(fileName);
 
-                    bool isPeriodica = !IsRettifica(fileName);
-                    Type tipoDaUsare = isPeriodica ? typeof(Models.Periodico.FlussoMisure) : typeof(Models.Rettifica.FlussoMisure);
+                    Type tipoDaUsare;
+
+                    if (IsSmis(fileName))
+                    {
+                        tipoDaUsare = typeof(Models.Smis.FlussoMisure);
+                    }
+                    else if (IsRettifica(fileName))
+                    {
+                        tipoDaUsare = typeof(Models.Rettifica.FlussoMisure);
+                    }
+                    else
+                    {
+                        tipoDaUsare = typeof(Models.Periodico.FlussoMisure);
+                    }
+
+                    //isPeriodica ? typeof(Models.Periodico.FlussoMisure) : typeof(Models.Rettifica.FlussoMisure);
+
 
                     XmlSerializer serializer = new XmlSerializer(tipoDaUsare);
 
@@ -114,7 +137,7 @@ namespace Vendita.HubMisureEE.Services
                             }
                             
                         }
-                        else
+                        else if (isRettifica)
                         {
                                  if (flussoGenerico is EE.Periodico)
                             {
@@ -125,6 +148,10 @@ namespace Vendita.HubMisureEE.Services
                                 SaveFlusso.SaveFlusso2DB((Models.Gas.Rettifica.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName);
                             }
                             
+                        }
+
+                        else {
+                            SaveFlusso.SaveFlusso2DB((Models.Smis.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName);
                         }
                     }
                     catch (Exception ex)
@@ -139,5 +166,13 @@ namespace Vendita.HubMisureEE.Services
                 HubLog.SaveLog2DB("Error", "CaricaXml.LoadXml", ex.ToString(), connectionString);
             }
         }
+
+        private static bool IsSmis(string filename)
+        {
+            string[] sigleSmis = { "SMIS" };
+            return sigleSmis.Any(s => filename.Contains(s));
+        }
     }
+
+
 }

@@ -116,15 +116,27 @@ namespace Vendita.HubMisureEE.Services
             }
             return flusso;
         }
-
-        //Funzione per controllare se il nome del file xml rispetta un determinato formato, con gestione degli errori.
         private static bool ControlloNomeFile(string FileName)
         {
             string[] parti = FileName.Split('_');
 
-            string[] endName = "";
+            if (parti.Length < 6)
+            {
+                return false;
+            }
 
-            if(parti.Length ==6)
+            string ultimoPezzo = parti[parti.Length - 1];
+
+            string[] endName = ultimoPezzo.Split('.');
+
+            string estensione = endName.Length > 1 ? endName[1].ToLower() : "";
+
+            if ((estensione == "xml" || estensione == "") &&
+                parti[0].Length == 11 &&
+                parti[1].Length == 11 &&
+                parti[2].Length == 6 &&
+                parti[4].Length == 14 &&
+                parti[5].Split('.')[0].Length == 7) 
             {
                 endName = parti[6].Split('.');
                 if (endName[1].ToLower() == "xml" && parti[0].Length == 11 && parti[1].Length == 11 && parti[2].Length == 6 && parti[4].Length == 14 && parti[5].Length == 7)
@@ -138,16 +150,7 @@ namespace Vendita.HubMisureEE.Services
             }
             }if(parti.Length ==7)
             {
-                endName = parti[7].Split('.');
-                if (endName[1].ToLower() == "xml" && 10 <= parti[0].Length <= 14 && parti[1].Length == 11 && parti[2].Length == 6 && parti[4].Length == 14 && parti[5].Length == 7)
-                    {
-                        return true;
-                    }
-                else
-                    {
-
-                        return false;
-                    }
+                return false;
             }
 
             
