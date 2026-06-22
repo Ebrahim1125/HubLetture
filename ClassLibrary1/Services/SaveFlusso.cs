@@ -157,7 +157,7 @@ namespace Vendita.HubMisureEE.Services
             FileXml.Columns.Add("DataIns", typeof(DateTime));
             FileXml.Columns.Add("NomeFile", typeof(string)).MaxLength = 250;
             FileXml.Columns.Add("FileXml", typeof(string));
-            FileXml.Columns.Add("Lavorato", typeof(bool));
+            FileXml.Columns.Add("Valido", typeof(bool));
 
             FileXml.PrimaryKey = new DataColumn[] { FileXml.Columns["Id"] };
 
@@ -180,10 +180,10 @@ namespace Vendita.HubMisureEE.Services
             {
                 Models.Periodico.FlussoMisureDatiPod pod = FlussoMisura.DatiPod[j];
 
-                // --- VARIABILE DINAMICA - mi sono vista costretta ad usare una variabile dinamica perchè 
-                // le classi da prendere erano tante e con nomi diversi, in questo modo prendo tutto da una sola variabile 
+                // VARIABILE DINAMICA 
                 dynamic d = pod.Item;
                 DettaglioConsumoV2Type consumo = d as DettaglioConsumoV2Type;
+
                 IdLettura++;
 
                 // CREAZIONE DATAROW LETTURE
@@ -200,11 +200,9 @@ namespace Vendita.HubMisureEE.Services
                     dr["DataMisura"] = ParseDateOrDbNull(pod?.DataMisura);
                     dr["DataPrest"] = ParseDateOrDbNull(pod?.DataPrest);
                     dr["CodPrat_SII"] = pod.CodPrat_SII ?? "";
-
-                    //Campi Periodico
                     dr["TipoRettifica"] = (d.GetType().GetProperty("TipoRettifica") != null) ? d?.TipoRettifica : DBNull.Value;
                     dr["DataRilevazione"] = (d.GetType().GetProperty("DataRilevazione") != null) ? d?.DataRilevazione : DBNull.Value;
-                    dr["Motivazione"] = /* (d.GetType().GetProperty("Motivazione") != null) ? d?.Motivazione : */ DBNull.Value;
+                    dr["Motivazione"] =  DBNull.Value;
                     dr["MisuraRaccolta"] = d?.Raccolta ?? DBNull.Value;
                     dr["MisuraTipoDato"] = d?.TipoDato ?? DBNull.Value;
                     dr["MisuraTipoCp"] = d?.TipoCp ?? DBNull.Value;
@@ -214,7 +212,6 @@ namespace Vendita.HubMisureEE.Services
                     dr["Tensione"] = (object)pod.DatiPdp?.Tensione ?? DBNull.Value;
                     dr["Forfait"] = (object)pod.DatiPdp?.Forfait ?? DBNull.Value;
                     dr["GruppoMis"] = (object)pod.DatiPdp?.GruppoMis ?? DBNull.Value;
-
                     dr["Ka"] = ParseDecimalOrDbNull(pod.DatiPdp?.Ka);
                     dr["Kr"] = ParseDecimalOrDbNull(pod.DatiPdp?.Kr);
                     dr["Kp"] = ParseDecimalOrDbNull(pod.DatiPdp?.Kp);
@@ -338,17 +335,21 @@ namespace Vendita.HubMisureEE.Services
                 drFile["DataIns"] = DateTime.Now;
                 drFile["NomeFile"] = fileName;
                 drFile["FileXml"] = "";
-                drFile["Lavorato"] = true;
+                drFile["Valido"] = true;
                 FileXml.Rows.Add(drFile);
             }
             catch (Exception ex)
             {
                 HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow FileXml per il file {fileName}: {ex.Message}", connessione);
             }
+
+
             //Scrittura col bulk
             Bulk2DB(QE, "Curve", connessione);
             Bulk2DB(dtLetture, "Letture", connessione);
             Bulk2DB(FileXml, "FileXml", connessione);
+
+
             FileLavorato(FolderLavoro, fileName, connessione);
         }
 
@@ -457,7 +458,6 @@ namespace Vendita.HubMisureEE.Services
             dtLetture.Columns.Add("TimeStamp", typeof(string));
             dtLetture.PrimaryKey = new DataColumn[] { dtLetture.Columns["Id"] };
 
-
             //PRELIEVO ULTIMO ID LETTURA
             int IdLettura = 0;
 
@@ -495,7 +495,7 @@ namespace Vendita.HubMisureEE.Services
             FileXml.Columns.Add("DataIns", typeof(DateTime));
             FileXml.Columns.Add("NomeFile", typeof(string)).MaxLength = 250;
             FileXml.Columns.Add("FileXml", typeof(string));
-            FileXml.Columns.Add("Lavorato", typeof(bool));
+            FileXml.Columns.Add("Valido", typeof(bool));
 
             string piVaUtente = "";
             string piVaDistributore = "";
@@ -504,7 +504,7 @@ namespace Vendita.HubMisureEE.Services
             string nPod = "";
             object DataMisure = new object();
 
-            // PRELIEVO IDENTIFICATIVI FLUSSO (PIvaUtente, PIvaDistributore, CodContrDisp)
+            // PRELIEVO IDENTIFICATIVI FLUSSO 
             for (int i = 0; i < FlussoRettifica.IdentificativiFlusso.Items.Length; i++)
             {
                 var name = FlussoRettifica.IdentificativiFlusso.ItemsElementName[i];
@@ -514,25 +514,22 @@ namespace Vendita.HubMisureEE.Services
                 else if (name == Models.Rettifica.ItemsChoiceType.CodContrDisp) codContrDisp = value;
             }
 
-            // CICLO POD (Riempimento DataRow)
             for (int j = 0; j < FlussoRettifica.DatiPod.Length; j++)
             {
                 Models.Rettifica.FlussoMisureDatiPod pod = FlussoRettifica.DatiPod[j];
 
-                // VARIABILE DINAMICA UNICA - come sopra, alcuni campi come EaF1
-                // si chiamano così oppure EaF1int sono in sottoclassi differenti
+                // VARIABILE DINAMICA 
                 dynamic d = pod.Item;
 
                 //Variabili Consumo
                 var consumoRv2 = pod.Item as Models.Rettifica.DettaglioConsumoRv2Type;
                 var consumoRv2Imm = pod.Item as Models.Rettifica.DettaglioConsumoRv2IntImmType;
                 IdLettura++;
-                //Stringhe
+
                 string tipoRettifica = pod.TipoRettifica.ToString() ?? "";
 
                 DataRow dr = dtLetture.NewRow();
 
-                //Campi comuni a tutti i POD
                 dr["Id"] = IdLettura;
                 dr["CodFlusso"] = codiceFlusso;
                 dr["PIvaUtente"] = piVaUtente;
@@ -541,15 +538,11 @@ namespace Vendita.HubMisureEE.Services
                 dr["Pod"] = pod.Pod;
                 nPod = pod.Pod;
                 dr["MeseAnno"] = ParseMonthYearOrDbNull(pod.MeseAnno);
-
                 dr["DataMisura"] = ParseDateOrDbNull(pod?.DataMisura);
-
                 DataMisure = dr["DataMisura"];
-
                 dr["DataRilevazione"] = ParseDateOrDbNull(pod.DataRilevazione);
                 dr["DataPrest"] = ParseDateOrDbNull(pod.DataPrest);
                 dr["TipoRettifica"] = tipoRettifica ?? (object)DBNull.Value;
-                //dr["Motivazione"] = pod?.Motivazione.ToString().Replace("Item", "0") ?? (object)DBNull.Value;
                 dr["Motivazione"] = GetXmlEnumValue(pod.Motivazione);
                 dr["CodPrat_SII"] = pod.CodPrat_SII ?? (object)DBNull.Value;
                 dr["Trattamento"] = (object)pod.DatiPdp?.Trattamento ?? DBNull.Value;
@@ -559,8 +552,6 @@ namespace Vendita.HubMisureEE.Services
                 dr["Ka"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.DatiPdp, "Ka")?.ToString());
                 dr["Kr"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.DatiPdp, "Kr")?.ToString());
                 dr["Kp"] = ParseDecimalOrDbNull(GetPropOrDbNull(pod.DatiPdp, "Kp")?.ToString());
-
-                //misure
                 dr["MisuraEaF1"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EaF1")?.ToString());
                 dr["MisuraEaF2"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EaF2")?.ToString());
                 dr["MisuraEaF3"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EaF3")?.ToString());
@@ -581,7 +572,6 @@ namespace Vendita.HubMisureEE.Services
                 dr["MisuraPotF6"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "PotF6")?.ToString());
                 dr["MisuraEaM"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EaM")?.ToString());
                 dr["MisuraPotMax"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "PotMax")?.ToString());
-                //erc
                 dr["MisuraErcF1"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "ErcF1")?.ToString());
                 dr["MisuraErcF2"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "ErcF2")?.ToString());
                 dr["MisuraErcF3"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "ErcF3")?.ToString());
@@ -589,7 +579,6 @@ namespace Vendita.HubMisureEE.Services
                 dr["MisuraErcF5"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "ErcF5")?.ToString());
                 dr["MisuraErcF6"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "ErcF6")?.ToString());
                 dr["MisuraErcM"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "ErcM")?.ToString());
-                //eri
                 dr["MisuraEriF1"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EriF1")?.ToString());
                 dr["MisuraEriF2"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EriF2")?.ToString());
                 dr["MisuraEriF3"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EriF3")?.ToString());
@@ -598,10 +587,8 @@ namespace Vendita.HubMisureEE.Services
                 dr["MisuraEriF6"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EriF6")?.ToString());
                 dr["MisuraEriM"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EriM")?.ToString());
                 dr["MisuraErM"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "ErM")?.ToString());
-
                 dr["MisuraEaM"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "EaM")?.ToString());
                 dr["MisuraPotM"] = ParseDecimalOrDbNull(GetPropOrDbNull(d, "PotM")?.ToString());
-
                 dr["ConsumoDataInizioPeriodo"] = ParseDateOrDbNull(consumoRv2?.DataInizioPeriodo ?? consumoRv2Imm?.DataInizioPeriodo);
                 dr["ConsumoEaF1"] = ParseDecimalOrDbNull(consumoRv2?.EaF1).ToString();
                 dr["ConsumoEaF2"] = ParseDecimalOrDbNull(consumoRv2?.EaF2).ToString();
@@ -635,7 +622,6 @@ namespace Vendita.HubMisureEE.Services
                 dr["ConsumoEriM"] = ParseDecimalOrDbNull(consumoRv2?.EriM ?? consumoRv2Imm?.EriMint).ToString();
                 dr["ConsumoEriM"] = ParseDecimalOrDbNull(consumoRv2?.EriM ?? consumoRv2Imm?.EriMint).ToString();
                 dr["TimeStamp"] = timeStamp;
-
                 dr["Valido"] = true;
                 dr["IdFile"] = IdFile;
 
@@ -685,7 +671,7 @@ namespace Vendita.HubMisureEE.Services
             drFile["DataIns"] = DateTime.Now;
             drFile["NomeFile"] = fileName;
             drFile["FileXml"] = "";
-            drFile["Lavorato"] = true;
+            drFile["Valido"] = true;
 
             FileXml.Rows.Add(drFile);
 
@@ -693,6 +679,7 @@ namespace Vendita.HubMisureEE.Services
             Bulk2DB(dtLetture, "Letture", connessione);
             Bulk2DB(QE, "Curve", connessione);
             Bulk2DB(FileXml, "FileXml", connessione);
+
 
             FileLavorato(FolderLavoro, fileName, connessione);
         }
@@ -705,7 +692,6 @@ namespace Vendita.HubMisureEE.Services
             string timeStamp = arrName[4];
 
             //PREPARAZIONE DATATABLE
-            //LettureSmisEE
             DataTable dtLettureSmisEE = new DataTable();
 
             dtLettureSmisEE.Columns.Add("Id", typeof(int)).AutoIncrement = true;
@@ -890,20 +876,22 @@ namespace Vendita.HubMisureEE.Services
             FileXml.Columns.Add("DataIns", typeof(DateTime));
             FileXml.Columns.Add("NomeFile", typeof(string)).MaxLength = 250;
             FileXml.Columns.Add("FileXml", typeof(string));
-            FileXml.Columns.Add("Lavorato", typeof(bool));
+            FileXml.Columns.Add("Valido", typeof(bool));
 
             DataRow drFile = FileXml.NewRow();
             drFile["DataIns"] = DateTime.Now;
             drFile["NomeFile"] = fileName;
             drFile["FileXml"] = "";
-            drFile["Lavorato"] = true;
+            drFile["Valido"] = true;
 
             FileXml.Rows.Add(drFile);
+
+            FileLavorato(FolderLavoro, fileName, connessione);
 
             //Scrittura col Bulk
             Bulk2DB(dtLettureSmisEE, "LettureSmisEE", connessione);
             Bulk2DB(FileXml, "FileXml", connessione);
-            FileLavorato(FolderLavoro, fileName, connessione);
+            
         }
 
         // Metodo per mappare i quartini in QE, con gestione dinamica delle proprietà e parsing dei valori
@@ -956,19 +944,10 @@ namespace Vendita.HubMisureEE.Services
                             sb.AppendFormat("{0}:{1};", col.ColumnName, col.DataType.Name);
                         }
 
-                        //foreach (DataColumn c in dtLetture.Columns)
-                        //{
-                        //    object v = dtLetture.Rows[0][c];
-                        //}
-
                         bulk.WriteToServer(dtLetture);
                     }
                 }
             }
-            //catch (SqlException se)
-            //{
-            //    HubLog.SaveLog2DB("Error", $"Bulk tab:{nomeTabella}", se.Message, connessione);
-            //}
             catch (Exception ex)
             {
                 HubLog.SaveLog2DB("INFO", $"Bulk tab:{nomeTabella}", ex.Message, connessione);
@@ -1022,8 +1001,6 @@ namespace Vendita.HubMisureEE.Services
             return 0m;
         }
 
-        
-
         /* Metodo generico per ottenere il valore di una proprietà da un oggetto,
         restituendo DBNull.Value se l'oggetto o la proprietà sono null*/
         private static object GetPropOrDbNull(object source, string propName)
@@ -1040,7 +1017,7 @@ namespace Vendita.HubMisureEE.Services
         private static void FileLavorato(string folderLavoro, string namefile, SqlConnection connessione)
         {
             File.Delete(Path.Combine(folderLavoro, namefile));
-            HubLog.SaveLog2DB("INFO", $"File lavorato: {namefile}", "", connessione);
+            HubLog.SaveLog2DB("INFO", "SaveFlussoEE",$"File Valido: {namefile}", connessione);
         }
         public static string GetXmlEnumValue(MotivazioneType value)
         {

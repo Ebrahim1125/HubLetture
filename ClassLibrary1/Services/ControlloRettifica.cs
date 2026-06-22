@@ -78,11 +78,11 @@ namespace Vendita.HubMisureEE.Services
         {
             try
             {
-                string query = $"UPDATE {NomeTabella} SET Rettificato=@Rettificato WHERE IdFile=@IdFile";
+                string query = $"UPDATE {NomeTabella} SET Valido=@Valido WHERE IdFile=@IdFile";
                 using (SqlCommand com = new SqlCommand(query, connessione))
                 {
                     com.Parameters.Add("@IdFile", SqlDbType.Int).Value = Id;
-                    com.Parameters.Add("@Rettificato", SqlDbType.Bit).Value = true;
+                    com.Parameters.Add("@Valdio", SqlDbType.Bit).Value = false;
 
                     com.ExecuteNonQuery();
                 }

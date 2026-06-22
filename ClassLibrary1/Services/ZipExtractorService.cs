@@ -131,12 +131,7 @@ namespace Vendita.HubMisureEE.Services
 
             string estensione = endName.Length > 1 ? endName[1].ToLower() : "";
 
-            if ((estensione == "xml" || estensione == "") &&
-                parti[0].Length == 11 &&
-                parti[1].Length == 11 &&
-                parti[2].Length == 6 &&
-                parti[4].Length == 14 &&
-                parti[5].Split('.')[0].Length == 7) 
+            if ((estensione == "xml" || estensione == "") && parti[0].Length == 11 && parti[1].Length == 11 && parti[2].Length == 6 && parti[4].Length == 14 && parti[5].Split('.')[0].Length == 7) 
             {
                 endName = parti[6].Split('.');
                 if (endName[1].ToLower() == "xml" && parti[0].Length == 11 && parti[1].Length == 11 && parti[2].Length == 6 && parti[4].Length == 14 && parti[5].Length == 7)

@@ -92,9 +92,6 @@ namespace Vendita.HubMisureEE.Services
                         tipoDaUsare = typeof(Models.Periodico.FlussoMisure);
                     }
 
-                    //isPeriodica ? typeof(Models.Periodico.FlussoMisure) : typeof(Models.Rettifica.FlussoMisure);
-
-
                     XmlSerializer serializer = new XmlSerializer(tipoDaUsare);
 
                     object flussoGenerico;
