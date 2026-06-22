@@ -31,6 +31,7 @@ namespace Vendita.HubMisureEE.Services
                     CaricaXML.LoadXml(doc, stringaConnessione, folderLavoro, IdFile++);
                 }
             }
+
             catch (Exception e)
             {
                 HubLog.SaveLog2DB("Error", "Importatori.cs", e.Message, stringaConnessione);
