@@ -6,6 +6,8 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Xml;
 using System.Xml.Serialization;
+using log4net;
+
 
 namespace Vendita.HubMisureEE.Services
 {
@@ -19,18 +21,19 @@ namespace Vendita.HubMisureEE.Services
                 "RFO2G", "RNO2G", "RIN2G", "RNV2G", "RSN2G",
                 "SMR2G", "RTR2G", "DSR2G", "AVR2G", "VPR2G",
                 "RFO", "RNO", "RIN", "RNV", "RSN",
-                "SMR", "RTR", "DSR", "AVR", "VPR", "INTR" 
+                "SMR", "RTR", "DSR", "AVR", "VPR", "INTR"
             };
 
             return sigleRettifica.Any(s => fileName.Contains(s));
         }
 
-       
-        public static void LoadXml(XmlDocument Doc, string connectionString, string FolderLavoro, int IdFile)
+
+        public static void LoadXml(XmlDocument Doc, string connectionString, string FolderLavoro, int IdFile, ILog log)
         {
             if (Doc == null)
             {
-                HubLog.SaveLog2DB("Error", "CaricaXml.LoadXml", "XmlDocument is null", connectionString);
+                //HubLog.SaveLog2DB("Error", "CaricaXml.LoadXml", "XmlDocument is null", connectionString);
+                log.Error("CaricaXml.LoadXml, XmlDocument is null");
                 return;
             }
 
@@ -52,21 +55,25 @@ namespace Vendita.HubMisureEE.Services
                     }
                     catch (FileNotFoundException fn)
                     {
-                        HubLog.SaveLog2DB("Error", "CaricaXML.LoadXml(FileNotFound)", fn.Message, connessione);
+                        //HubLog.SaveLog2DB("Error", "CaricaXML.LoadXml(FileNotFound)", fn.Message, connessione);
+                        log.Error("CaricaXML.LoadXml(FileNotFound)" + fn.Message);
                     }
                     catch (FileLoadException fl)
                     {
-                        HubLog.SaveLog2DB("Error", "CaricaXML.LoadXml(FileLoad)", fl.Message, connessione);
+                        //HubLog.SaveLog2DB("Error", "CaricaXML.LoadXml(FileLoad)", fl.Message, connessione);
+                        log.Error("CaricaXML.LoadXml(FileLoad)" + fl.Message);
                     }
                     catch (FileFormatException ff)
                     {
-                        HubLog.SaveLog2DB("Error", "CaricaXML.LoadXml(FileFormat)", ff.Message, connessione);
+                        //HubLog.SaveLog2DB("Error", "CaricaXML.LoadXml(FileFormat)", ff.Message, connessione);
+                        log.Error("CaricaXML.LoadXml(FileFormat)" + ff.Message);
                     }
                     catch (Exception ex)
                     {
-                        HubLog.SaveLog2DB("Error", "CaricaXML.LoadXml(UnknownError)", ex.Message, connessione);
+                        //HubLog.SaveLog2DB("Error", "CaricaXML.LoadXml(UnknownError)", ex.Message, connessione);
+                        log.Error("CaricaXML.LoadXml(UnknownError)" + ex.Message);
                     }
-                    
+
                     bool isSmis = IsSmis(fileName);
                     bool isRettifica = IsRettifica(fileName);
                     bool isPeriodica = IsPeriodico(fileName);
@@ -81,7 +88,7 @@ namespace Vendita.HubMisureEE.Services
                     {
                         tipoDaUsare = typeof(Models.Rettifica.FlussoMisure);
                     }
-                    else /*if (IsPeriodico(fileName))*/
+                    else
                     {
                         tipoDaUsare = typeof(Models.Periodico.FlussoMisure);
                     }
@@ -99,18 +106,21 @@ namespace Vendita.HubMisureEE.Services
                     }
                     catch (SerializationException se)
                     {
-                        HubLog.SaveLog2DB("Error", "CaricaXml.Deserialize", $"Errore durante la deserializzazione del file {fileName}: {se}", connessione);
+                        //HubLog.SaveLog2DB("Error", "CaricaXml.Deserialize", $"Errore durante la deserializzazione del file {fileName}: {se}", connessione);
+                        log.Error($"Errore durante la deserializzazione del file {fileName}: {se}");
                         return;
                     }
                     catch (Exception ex)
                     {
-                        HubLog.SaveLog2DB("Error", "CaricaXml.Deserialize", $"Errore durante la deserializzazione del file {fileName}: {ex}", connessione);
+                        //HubLog.SaveLog2DB("Error", "CaricaXml.Deserialize", $"Errore durante la deserializzazione del file {fileName}: {ex}", connessione);
+                        log.Error($"Errore durante la deserializzazione del file {fileName}: {ex}");
                         return;
                     }
 
                     if (flussoGenerico == null)
                     {
-                        HubLog.SaveLog2DB("Warning", "CaricaXml.Deserialize", $"Deserializzazione nulla per il file {fileName}", connessione);
+                        //HubLog.SaveLog2DB("Warning", "CaricaXml.Deserialize", $"Deserializzazione nulla per il file {fileName}", connessione);
+                        log.Error($"Deserializzazione nulla per il file {fileName}");
                         return;
                     }
 
@@ -118,36 +128,39 @@ namespace Vendita.HubMisureEE.Services
                     {
                         if (isPeriodica)
                         {
-                            SaveFlusso.SaveFlusso2DB((Models.Periodico.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName);
+                            SaveFlusso.SaveFlusso2DB((Models.Periodico.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName, log);
                         }
                         else if (isRettifica)
                         {
-                            SaveFlusso.SaveFlusso2DB((Models.Rettifica.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName);
+                            SaveFlusso.SaveFlusso2DB((Models.Rettifica.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName, log);
                         }
 
-                        else {
-                            SaveFlusso.SaveFlusso2DB((Models.Smis.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName);
+                        else
+                        {
+                            SaveFlusso.SaveFlusso2DB((Models.Smis.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName, log);
                         }
                     }
                     catch (Exception ex)
                     {
-                        HubLog.SaveLog2DB("Error", "CaricaXml.SaveFlusso2DB", $"Errore durante la lavorazione del file {fileName}: {ex}", connessione);
+                        //HubLog.SaveLog2DB("Error", "CaricaXml.SaveFlusso2DB", $"Errore durante la lavorazione del file {fileName}: {ex}", connessione);
+                        log.Error($"Errore durante la lavorazione del file {fileName}: {ex}");
                         return;
                     }
                 }
             }
             catch (Exception ex)
             {
-                HubLog.SaveLog2DB("Error", "CaricaXml.LoadXml", ex.ToString(), connectionString);
+                //HubLog.SaveLog2DB("Error", "CaricaXml.LoadXml", ex.ToString(), connectionString);
+                log.Error("CaricaXml.LoadXml" + ex.ToString());
             }
         }
+
         private static bool IsPeriodico(string filename)
         {
             string[] siglePeriodico = { "PDO", "PDO2G", "PNO", "PNO2G", "VNO", "VNO2G", "SNM", "SNM2G", "EIN",
                 "EIN2G", "SM", "SM2G", "RT", "RT2G", "DS", "DS2G", "AV", "AV2G", "VP", "VP2G", "INT" };
             return siglePeriodico.Any(s => filename.Contains(s));
         }
-
         private static bool IsSmis(string filename)
         {
             string[] sigleSmis = { "SMIS" };

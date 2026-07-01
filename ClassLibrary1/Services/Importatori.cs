@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
+using log4net;
 
 namespace Vendita.HubMisureEE.Services
 {
     public static class Importatori
     {
-        public static void Importa(string folderSorgente, string folderLavoro, string stringaConnessione)
+        public static void Importa(string folderSorgente, string folderLavoro, string stringaConnessione, ILog log)
         {
             /// Importa file XML a partire da uno o più archivi ZIP presenti in una cartella sorgente./// 
             /// Flusso operativo:/// 
@@ -22,19 +23,20 @@ namespace Vendita.HubMisureEE.Services
             {
                 int IdFile = 0;
 
-                List<string> flusso = ZipExtractorService.UnloadZip(folderSorgente, folderLavoro, stringaConnessione, out IdFile);
+                List<string> flusso = ZipExtractorService.UnloadZip(folderSorgente, folderLavoro, stringaConnessione, out IdFile, log);
                 foreach (string Doc in flusso)
 
                 {
                     XmlDocument doc = new XmlDocument();
                     doc.Load(Path.Combine(folderLavoro, Doc));
-                    CaricaXML.LoadXml(doc, stringaConnessione, folderLavoro, IdFile++);
+                    CaricaXML.LoadXml(doc, stringaConnessione, folderLavoro, IdFile++, log);
                 }
             }
 
             catch (Exception e)
             {
-                HubLog.SaveLog2DB("Error", "Importatori.cs", e.Message, stringaConnessione);
+                //HubLog.SaveLog2DB("Error", "Importatori.cs", e.Message, stringaConnessione);
+                log.Error("Importatori.cs" + e.Message);
             }
         }
     }

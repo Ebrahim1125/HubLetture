@@ -1,13 +1,14 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using log4net;
 
 namespace Vendita.HubMisureEE.Services
 {
     // La classe ControllaRettifica contiene metodi per verificare se una lettura è stata rettificata e per aggiornare lo stato di rettifica nei database.
     internal class ControllaRettifica
     {
-        public static bool IsRettificato(SqlConnection connessione, string PIvaUtente, string PIvaDistributore, string Pod, object DataMisure)
+        public static bool IsRettificato(SqlConnection connessione, string PIvaUtente, string PIvaDistributore, string Pod, object DataMisure, ILog log)
         {
             int IdFileXml = 0;
 
@@ -31,22 +32,24 @@ namespace Vendita.HubMisureEE.Services
                 }
                 if (IdFileXml != 0)
                 {
-                    Rettifica("Letture", IdFileXml, connessione);
-                    Rettifica("FileXml", IdFileXml, connessione);
-                    Rettifica("Curve", IdFileXml, connessione);
+                    Rettifica("Letture", IdFileXml, connessione, log);
+                    Rettifica("FileXml", IdFileXml, connessione, log);
+                    Rettifica("Curve", IdFileXml, connessione, log);
                     return true;
                 }
                 return false;
             }
             catch (Exception ex)
             {
-                HubLog.SaveLog2DB("Error", "ControllaRettifica.IsRettificato(PeriodicoNonTrovato)", ex.Message, connessione);
+                //HubLog.SaveLog2DB("Error", "ControllaRettifica.IsRettificato(PeriodicoNonTrovato)", ex.Message, connessione);
+                log.Error("ControllaRettifica.IsRettificato(PeriodicoNonTrovato" + ex.Message);
+
                 return false;
             }
         }
 
         // Il metodo Rettifica aggiorna il campo Rettificato a true per un record specifico identificato da IdFile nella tabella specificata.
-        private static void Rettifica(string NomeTabella, int Id, SqlConnection connessione)
+        private static void Rettifica(string NomeTabella, int Id, SqlConnection connessione, ILog log)
         {
             try
             {
@@ -61,12 +64,15 @@ namespace Vendita.HubMisureEE.Services
             }
             catch (SqlException ex)
             {
-                HubLog.SaveLog2DB("Error", "ControllaRettifica.Rettifica", ex.Message, connessione);
+                //HubLog.SaveLog2DB("Error", "ControllaRettifica.Rettifica", ex.Message, connessione);
+                log.Error("ControllaRettifica.Rettifica" + ex.Message);
             }
             catch (Exception ex)
             {
-                HubLog.SaveLog2DB("Error", "ControllaRettifica.Rettifica", ex.Message, connessione);
+                //HubLog.SaveLog2DB("Error", "ControllaRettifica.Rettifica", ex.Message, connessione);
+                log.Error("ControllaRettifica.Rettifica" + ex.Message);
             }
         }
     }
 }
+

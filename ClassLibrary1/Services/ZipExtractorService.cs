@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using log4net;
 
 namespace Vendita.HubMisureEE.Services
 {
@@ -14,7 +15,7 @@ namespace Vendita.HubMisureEE.Services
         //La funzione restituisce una lista dei nomi dei file xml estratti o copiati.
         //Inoltre, la funzione controlla se i file xml rispettano un determinato formato di nome e se sono già presenti nel database prima di estrarli o copiarli.
         //In caso di errori durante l'estrazione o la copia dei file, viene registrato un log nel database.
-        public static List<string> UnloadZip(string inFile, string outFile, string stringConnect, out int IdFile)
+        public static List<string> UnloadZip(string inFile, string outFile, string stringConnect, out int IdFile, ILog log)
         {
             string[] zipFiles = null;
             string[] xmlFiles = null;
@@ -32,19 +33,24 @@ namespace Vendita.HubMisureEE.Services
             }
             catch (FileLoadException ex)
             {
-                HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
+                //HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
+                log.Error("ZipExtractorService.cs/UnloadZip" + ex.Message);
+
             }
             catch (DirectoryNotFoundException ex)
             {
-                HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
+                //HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
+                log.Error("ZipExtractorService.cs/UnloadZip" + ex.Message);
             }
             catch (IOException ex)
             {
-                HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
+                //HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
+                log.Error("ZipExtractorService.cs/UnloadZip" + ex.Message);
             }
             catch (UnauthorizedAccessException ex)
             {
-                HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
+                //HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
+                log.Error("ZipExtractorService.cs/UnloadZip" + ex.Message);
             }
 
             DataTable FileXml = new DataTable();
@@ -66,7 +72,8 @@ namespace Vendita.HubMisureEE.Services
             }
             catch (SqlException ex)
             {
-                HubLog.SaveLog2DB("Error", "ZipExtractorService/Query FileXml", ex.Message, stringConnect);
+                //HubLog.SaveLog2DB("Error", "ZipExtractorService/Query FileXml", ex.Message, stringConnect);
+                log.Error("ZipExtractorService/Query FileXml " + ex.Message);
             }
 
             foreach (string item in allFiles)
@@ -111,7 +118,8 @@ namespace Vendita.HubMisureEE.Services
                 }
                 catch (Exception ex)
                 {
-                    HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/Inserimento nomi nel flusso", ex.Message, stringConnect);
+                    //HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/Inserimento nomi nel flusso", ex.Message, stringConnect);
+                    log.Error("ZipExtractorService.cs/Inserimento nomi nel flusso " + ex.Message);
                 }
             }
             return flusso;
@@ -131,7 +139,7 @@ namespace Vendita.HubMisureEE.Services
 
             string estensione = endName.Length > 1 ? endName[1].ToLower() : "";
 
-            if ((estensione == "xml" || estensione == "") && parti[0].Length == 11 && parti[1].Length == 11 && parti[2].Length == 6 && parti[4].Length == 14 && parti[5].Split('.')[0].Length == 7) 
+            if ((estensione == "xml" || estensione == "") && parti[0].Length == 11 && parti[1].Length == 11 && parti[2].Length == 6 && parti[4].Length == 14 && parti[5].Split('.')[0].Length == 7)
             {
                 return true;
             }
