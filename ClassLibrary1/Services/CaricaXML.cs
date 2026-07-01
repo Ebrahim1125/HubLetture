@@ -69,7 +69,7 @@ namespace Vendita.HubMisureEE.Services
                     
                     bool isSmis = IsSmis(fileName);
                     bool isRettifica = IsRettifica(fileName);
-                    bool isPeriodica = !IsRettifica(fileName) && !IsSmis(fileName);
+                    bool isPeriodica = IsPeriodico(fileName);
 
                     Type tipoDaUsare;
 
@@ -81,7 +81,7 @@ namespace Vendita.HubMisureEE.Services
                     {
                         tipoDaUsare = typeof(Models.Rettifica.FlussoMisure);
                     }
-                    else
+                    else /*if (IsPeriodico(fileName))*/
                     {
                         tipoDaUsare = typeof(Models.Periodico.FlussoMisure);
                     }
@@ -140,6 +140,12 @@ namespace Vendita.HubMisureEE.Services
             {
                 HubLog.SaveLog2DB("Error", "CaricaXml.LoadXml", ex.ToString(), connectionString);
             }
+        }
+        private static bool IsPeriodico(string filename)
+        {
+            string[] siglePeriodico = { "PDO", "PDO2G", "PNO", "PNO2G", "VNO", "VNO2G", "SNM", "SNM2G", "EIN",
+                "EIN2G", "SM", "SM2G", "RT", "RT2G", "DS", "DS2G", "AV", "AV2G", "VP", "VP2G", "INT" };
+            return siglePeriodico.Any(s => filename.Contains(s));
         }
 
         private static bool IsSmis(string filename)

@@ -23,6 +23,7 @@ namespace Vendita.HubMisureEE.Services
                 com.ExecuteNonQuery();
             }
         }
+
         public static void SaveLog2DB(string tipo, string dove, string messaggio, SqlConnection connessione)
         {
             string query = @"INSERT INTO dbo.HubLog (DataIns, Tipo, Dove, Messaggio) VALUES (@DataIns, @Tipo, @Dove, @Messaggio)";
