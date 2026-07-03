@@ -12,9 +12,8 @@ namespace Vendita.HubMisureEE.Services
         {
             int IdFileXml = 0;
 
-            // La query SQL seleziona l'IdFile dalla tabella Letture, unendo con la tabella Curve,
-            // filtrando per i parametri specificati (PIvaUtente, PIvaDistributore, Pod, DataMisura) e verificando se il CodFlusso inizia con 'P'.
-            try
+           
+            if (DataMisure.GetType() == FlussoMisureGas.Rettifica)
             {
                 string query = @"SELECT l.IdFile FROM Letture l
                      LEFT JOIN Curve c ON l.Id = c.IdLetture WHERE l.PIvaUtente = @PIvaUtente
@@ -25,13 +24,23 @@ namespace Vendita.HubMisureEE.Services
                      OR  @DataMisura = l.DataMisura))";
                 using (SqlCommand com = new SqlCommand(query, connessione))
                 {
-                    com.Parameters.Add("@PIvaUtente", SqlDbType.VarChar).Value = PIvaUtente;
-                    com.Parameters.Add("@PIvaDistributore", SqlDbType.VarChar).Value = PIvaDistributore;
-                    com.Parameters.Add("@Pod", SqlDbType.VarChar).Value = Pod;
-                    com.Parameters.Add("@DataMisura", SqlDbType.Date).Value = DataMisure;
-                    IdFileXml = Convert.ToInt32(com.ExecuteScalar());
+                   IdFileXml = QueryIdRettificare( connessione,  PIvaUtente,  PIvaDistributore,  CodiceMisuratore,  DataMisure,  nameXml, "CodPdr")
+
+                   
+                        
+                    if (IdFileXml != 0)
+                        {
+                            Rettifica("Gas", IdFileXml, connessione);
+                            Rettifica("FileXml", IdFileXml, connessione);
+
+                            HubLog.SaveLog2DB("Info", "Gas.ControllaRettifica.IsRettificato", $"Lettura: {nameXml} , trovato file da rettificare", connessione);
+                            return true;
+                            
+                        }
+                        HubLog.SaveLog2DB("Warning", "Gas.ControllaRettifica.IsRettificato(PeriodicoNonTrovato)", $"Lettura: {nameXml}- Nessuna lettura da rettificare", connessione);
+                    return false;
                 }
-                if (IdFileXml != 0)
+                catch (Exception ex)
                 {
                     Rettifica("Letture", IdFileXml, connessione, log);
                     Rettifica("FileXml", IdFileXml, connessione, log);
@@ -79,6 +88,30 @@ namespace Vendita.HubMisureEE.Services
                 log.Error($"ControllaRettifica.Rettifica--Errore nell'aggiornamento della validita" + ex.Message);
             }
         }
+
+        private static int QueryIdRettificare(SqlConnection connessione, string PIvaUtente, string PIvaDistributore, string CodiceMisuratore, object DataMisure, string nameXml, string TipoMisuratore)
+        {
+            int IdFileXml=0;
+            string query = $@"SELECT l.IdFile 
+                                FROM LettureEE l
+                                    LEFT JOIN Curve c ON l.Id = c.IdLetture 
+                                WHERE l.PIvaUtente = @PIvaUtente
+                                    AND l.PIvaDistributore = @PIvaDistributore
+                                    AND l.{TipoMisuratore} = @Pod AND l.CodFlusso LIKE 'P%'
+                                    AND ((@DataMisura = DATEFROMPARTS(YEAR(l.MeseAnno), MONTH(l.MeseAnno), c.Giorno) 
+                                    OR @DataMisura = l.DataMisura))";
+
+            using (SqlCommand com = new SqlCommand(query, connessione))
+                {
+                    com.Parameters.Add("@PIvaUtente", SqlDbType.VarChar).Value = PIvaUtente;
+                    com.Parameters.Add("@PIvaDistributore", SqlDbType.VarChar).Value = PIvaDistributore;
+                    com.Parameters.Add("@Pod", SqlDbType.VarChar).Value = Pod;
+                    com.Parameters.Add("@DataMisura", SqlDbType.Date).Value = DataMisure;
+                    IdFileXml = Convert.ToInt32(com.ExecuteScalar());
+                }
+
+            return IdFileXml;
+    }
     }
 }
 
