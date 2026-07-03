@@ -10,13 +10,14 @@ using System.Xml.Serialization;
 using Vendita.HubMisureEE.Models.Periodico;
 using Vendita.HubMisureEE.Models.Rettifica;
 using Vendita.HubMisureEE.Models.Smis;
+using log4net;
 
 namespace Vendita.HubMisureEE.Services
 {
     internal class SaveFlusso
     {
         // Lavorazione del flusso Periodico e salvataggio su DB
-        public static void SaveFlusso2DB(Models.Periodico.FlussoMisure FlussoMisura, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName)
+        public static void SaveFlusso2DB(Models.Periodico.FlussoMisure FlussoMisura, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName, ILog log)
         {
             if (FlussoMisura == null || FlussoMisura.DatiPod == null || FlussoMisura.DatiPod.Length == 0)
                 return;
@@ -202,7 +203,7 @@ namespace Vendita.HubMisureEE.Services
                     dr["CodPrat_SII"] = pod.CodPrat_SII ?? "";
                     dr["TipoRettifica"] = (d.GetType().GetProperty("TipoRettifica") != null) ? d?.TipoRettifica : DBNull.Value;
                     dr["DataRilevazione"] = (d.GetType().GetProperty("DataRilevazione") != null) ? d?.DataRilevazione : DBNull.Value;
-                    dr["Motivazione"] =  DBNull.Value;
+                    dr["Motivazione"] = DBNull.Value;
                     dr["MisuraRaccolta"] = d?.Raccolta ?? DBNull.Value;
                     dr["MisuraTipoDato"] = d?.TipoDato ?? DBNull.Value;
                     dr["MisuraTipoCp"] = d?.TipoCp ?? DBNull.Value;
@@ -287,7 +288,8 @@ namespace Vendita.HubMisureEE.Services
                 }
                 catch (Exception ex)
                 {
-                    HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow letture per il POD {pod.Pod}: {ex.Message}", connessione);
+                    //HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow letture per il POD {pod.Pod}: {ex.Message}", connessione);
+                    log.Error("SaveFlusso2DB - Errore durante la creazione della DataRow letture per il POD" + pod.Pod + ex.Message);
                 }
 
                 // CREAZIONE DATAROW QUARTINI
@@ -325,7 +327,8 @@ namespace Vendita.HubMisureEE.Services
                 }
                 catch (Exception ex)
                 {
-                    HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow quartini per il POD {pod.Pod}: {ex.Message}", connessione);
+                    //HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow quartini per il POD {pod.Pod}: {ex.Message}", connessione);
+                    log.Error("SaveFlusso2DB - Errore durante la creazione della DataRow quartini per il POD " + pod.Pod + ex.Message);
                 }
             }
 
@@ -340,21 +343,23 @@ namespace Vendita.HubMisureEE.Services
             }
             catch (Exception ex)
             {
-                HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow FileXml per il file {fileName}: {ex.Message}", connessione);
+                //HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow FileXml per il file {fileName}: {ex.Message}", connessione);
+                log.Error("SaveFlusso2DB - Errore durante la creazione della DataRow FileXml per il file" + fileName + ex.Message);
+
             }
 
 
             //Scrittura col bulk
-            Bulk2DB(QE, "Curve", connessione);
-            Bulk2DB(dtLetture, "Letture", connessione);
-            Bulk2DB(FileXml, "FileXml", connessione);
+            Bulk2DB(QE, "Curve", connessione, log);
+            Bulk2DB(dtLetture, "Letture", connessione, log);
+            Bulk2DB(FileXml, "FileXml", connessione, log);
 
 
-            FileLavorato(FolderLavoro, fileName, connessione);
+            FileLavorato(FolderLavoro, fileName, connessione, log);
         }
 
         // Lavorazione del flusso Rettifico e salvataggio su DB
-        public static void SaveFlusso2DB(Models.Rettifica.FlussoMisure FlussoRettifica, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName)
+        public static void SaveFlusso2DB(Models.Rettifica.FlussoMisure FlussoRettifica, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName, ILog log)
         {
             if (FlussoRettifica == null || FlussoRettifica.DatiPod == null || FlussoRettifica.DatiPod.Length == 0)
                 return;
@@ -664,7 +669,7 @@ namespace Vendita.HubMisureEE.Services
                     MappaQuartini(QE, IdFile, IdLettura, "Eri", rfov2.Eri);
                 }
 
-                ControllaRettifica.IsRettificato(connessione, piVaUtente, piVaDistributore, nPod, DataMisure, name.ToString(), connessione);
+                ControllaRettifica.IsRettificato(connessione, piVaUtente, piVaDistributore, nPod, DataMisure, log);
             }
 
             DataRow drFile = FileXml.NewRow();
@@ -676,15 +681,15 @@ namespace Vendita.HubMisureEE.Services
             FileXml.Rows.Add(drFile);
 
             //Scrittura col Bulk
-            Bulk2DB(dtLetture, "Letture", connessione);
-            Bulk2DB(QE, "Curve", connessione);
-            Bulk2DB(FileXml, "FileXml", connessione);
+            Bulk2DB(dtLetture, "Letture", connessione, log);
+            Bulk2DB(QE, "Curve", connessione, log);
+            Bulk2DB(FileXml, "FileXml", connessione, log);
 
 
-            FileLavorato(FolderLavoro, fileName, connessione);
+            FileLavorato(FolderLavoro, fileName, connessione, log);
         }
 
-        public static void SaveFlusso2DB(Models.Smis.FlussoMisure FlussoSmis, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName)
+        public static void SaveFlusso2DB(Models.Smis.FlussoMisure FlussoSmis, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName, ILog log)
         {
             if (FlussoSmis == null || FlussoSmis.DatiPod == null || FlussoSmis.DatiPod.Length == 0)
                 return;
@@ -791,7 +796,7 @@ namespace Vendita.HubMisureEE.Services
             dtLettureSmisEE.Columns.Add("IdFile", typeof(int));
             dtLettureSmisEE.Columns.Add("TimeStamp", typeof(string));
             dtLettureSmisEE.Columns.Add("Valido", typeof(bool));
-            
+
 
             dtLettureSmisEE.PrimaryKey = new DataColumn[] { dtLettureSmisEE.Columns["Id"] };
 
@@ -839,11 +844,11 @@ namespace Vendita.HubMisureEE.Services
                 dr["TipologiaMisuratoreMontaggio"] = pod.Montaggio.TipoMisuratore.ToString();
                 dr["DataMisuraMontaggio"] = pod.Montaggio.DataMisura;
                 DateTime data;
-                dr["DataMessaReggime"] = DateTime.TryParse(pod.Montaggio.DataMessaRegime2G, out data)? (object)data: DBNull.Value;
+                dr["DataMessaReggime"] = DateTime.TryParse(pod.Montaggio.DataMessaRegime2G, out data) ? (object)data : DBNull.Value;
                 dr["Tensione"] = pod.Montaggio.Tensione;
                 dr["Ka"] = ParseDecimalOrDbNull(pod.Montaggio.Ka?.ToString());
                 dr["Kr"] = ParseDecimalOrDbNull(pod.Montaggio.Kr?.ToString());
-                dr["Kp"] = ParseDecimalOrDbNull(pod.Montaggio.Kp?.ToString()); 
+                dr["Kp"] = ParseDecimalOrDbNull(pod.Montaggio.Kp?.ToString());
                 dr["MatrAtt"] = pod.Montaggio.MatrAtt;
                 dr["MatrRea"] = pod.Montaggio.MatrRea;
                 dr["MatrPot"] = pod.Montaggio.MatrPot;
@@ -886,12 +891,12 @@ namespace Vendita.HubMisureEE.Services
 
             FileXml.Rows.Add(drFile);
 
-            FileLavorato(FolderLavoro, fileName, connessione);
+            FileLavorato(FolderLavoro, fileName, connessione, log);
 
             //Scrittura col Bulk
-            Bulk2DB(dtLettureSmisEE, "LettureSmisEE", connessione);
-            Bulk2DB(FileXml, "FileXml", connessione);
-            
+            Bulk2DB(dtLettureSmisEE, "LettureSmisEE", connessione, log);
+            Bulk2DB(FileXml, "FileXml", connessione, log);
+
         }
 
         // Metodo per mappare i quartini in QE, con gestione dinamica delle proprietà e parsing dei valori
@@ -928,7 +933,7 @@ namespace Vendita.HubMisureEE.Services
         }
 
         // Metodo generico per scrivere DataTable in DB con SqlBulkCopy
-        public static void Bulk2DB(DataTable dtLetture, string nomeTabella, SqlConnection connessione)
+        public static void Bulk2DB(DataTable dtLetture, string nomeTabella, SqlConnection connessione, ILog log)
         {
             try
             {
@@ -950,9 +955,11 @@ namespace Vendita.HubMisureEE.Services
             }
             catch (Exception ex)
             {
-                HubLog.SaveLog2DB("INFO", $"Bulk tab:{nomeTabella}", ex.Message, connessione);
+                //HubLog.SaveLog2DB("INFO", $"Bulk tab:{nomeTabella}", ex.Message, connessione);
+                log.Error("Bulk tab" + nomeTabella + " " + ex.Message);
+
             }
-            
+
         }
         // Metodi di supporto per parsing e gestione valori nulli
         private static object ParseDateOrDbNull(string value)
@@ -1014,10 +1021,12 @@ namespace Vendita.HubMisureEE.Services
         }
 
         // Metodo per eliminare il file dopo la lavorazione e loggare l'evento
-        private static void FileLavorato(string folderLavoro, string namefile, SqlConnection connessione)
+        private static void FileLavorato(string folderLavoro, string namefile, SqlConnection connessione, ILog log)
         {
             File.Delete(Path.Combine(folderLavoro, namefile));
-            HubLog.SaveLog2DB("INFO", "SaveFlussoEE",$"File Valido: {namefile}", connessione);
+            //HubLog.SaveLog2DB("INFO", "SaveFlussoEE",$"File Valido: {namefile}", connessione);
+            log.Error("SaveFlussoEE - File Valido:" + namefile);
+
         }
         public static string GetXmlEnumValue(MotivazioneType value)
         {
@@ -1026,7 +1035,7 @@ namespace Vendita.HubMisureEE.Services
             var attr = field?
                 .GetCustomAttribute<XmlEnumAttribute>();
 
-            return attr?.Name; 
+            return attr?.Name;
         }
         public static string GetXmlEnumValue(MotivazioneSostType value)
         {
@@ -1035,7 +1044,7 @@ namespace Vendita.HubMisureEE.Services
             var attr = field?
                 .GetCustomAttribute<XmlEnumAttribute>();
 
-            return attr?.Name; 
+            return attr?.Name;
         }
     }
 }

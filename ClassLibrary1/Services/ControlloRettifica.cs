@@ -1,25 +1,28 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
-using Vendita.HubMisureEE.Models.FlussoMisuraEE;
-using Vendita.HubMisureEE.Models.FlussoMisuraGas;
+using log4net;
 
 namespace Vendita.HubMisureEE.Services
 {
     // La classe ControllaRettifica contiene metodi per verificare se una lettura è stata rettificata e per aggiornare lo stato di rettifica nei database.
     internal class ControllaRettifica
     {
-        public static bool IsRettificato(SqlConnection connessione, string PIvaUtente, string PIvaDistributore, string CodiceMisuratore, object DataMisure, string nameXml)
+        public static bool IsRettificato(SqlConnection connessione, string piVaUtente, string piVaDistributore, string Pod, object DataMisure, ILog log)
         {
             int IdFileXml = 0;
 
            
             if (DataMisure.GetType() == FlussoMisureGas.Rettifica)
             {
-                // La query SQL seleziona l'IdFile dalla tabella Letture, unendo la tabella Curve,
-                // filtrando per i parametri specificati (PIvaUtente, PIvaDistributore, CodPdr, DataMisura) e verificando se il CodFlusso inizia con 'T'.
-                
-                try
+                string query = @"SELECT l.IdFile FROM Letture l
+                     LEFT JOIN Curve c ON l.Id = c.IdLetture WHERE l.PIvaUtente = @PIvaUtente
+                     AND l.PIvaDistributore = @PIvaDistributore
+                     AND l.Pod = @Pod AND l.CodFlusso LIKE 'P%'
+                     AND l.CodFlusso NOT LIKE 'SMIS'
+                     AND ((@DataMisura = DATEFROMPARTS(YEAR(l.MeseAnno), MONTH(l.MeseAnno), c.Giorno) 
+                     OR  @DataMisura = l.DataMisura))";
+                using (SqlCommand com = new SqlCommand(query, connessione))
                 {
                    IdFileXml = QueryIdRettificare( connessione,  PIvaUtente,  PIvaDistributore,  CodiceMisuratore,  DataMisure,  nameXml, "CodPdr")
 
@@ -39,42 +42,29 @@ namespace Vendita.HubMisureEE.Services
                 }
                 catch (Exception ex)
                 {
-                    HubLog.SaveLog2DB("Error", "Gas.ControllaRettifica.IsRettificato(PeriodicoNonTrovato)", $"{nameXml}-{ex.Message}", connessione);
-                    return false;
+                    Rettifica("Letture", IdFileXml, connessione, log);
+                    Rettifica("FileXml", IdFileXml, connessione, log);
+                    Rettifica("Curve", IdFileXml, connessione, log);
+                    log.Info("ControllaRettifica.IsRettificato--Trovato file da rettificare--" );
+                    return true;
                 }
-
-            }else if (DataMisure.GetType() == FlussoMisureGas.Periodico)
-            {
-                // La query SQL seleziona l'IdFile dalla tabella Letture, unendo la tabella Curve,
-                // filtrando per i parametri specificati (PIvaUtente, PIvaDistributore, Pod, DataMisura) e verificando se il CodFlusso inizia con 'P'.
-                try
+                else
                 {
-                    IdFileXml = QueryIdRettificare( connessione,  PIvaUtente,  PIvaDistributore,  CodiceMisuratore,  DataMisure,  nameXml, "Pod")
+                    log.Info("ControllaRettifica.IsRettificato--Nessun file da rettificare trovato per i parametri forniti.");
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                //HubLog.SaveLog2DB("Error", "ControllaRettifica.IsRettificato(PeriodicoNonTrovato)", ex.Message, connessione);
+                log.Error("ControllaRettifica.IsRettificato--Errore ricerca file da rettificare--" + ex.Message);
 
-                    
-                    if (IdFileXml != 0)
-                    {
-                        Rettifica("Letture", IdFileXml, connessione);
-                        Rettifica("FileXml", IdFileXml, connessione);
-                        Rettifica("Curve", IdFileXml, connessione);
-                        HubLog.SaveLog2DB("Info", "EE.ControllaRettifica.IsRettificato", $"Lettura: {nameXml} lavorata correttamente, trovato file da rettificare", connessione);
-                        return true;
-                    }
-                    HubLog.SaveLog2DB("Warning", "EE.ControllaRettifica.IsRettificato(PeriodicoNonTrovato)", $"Lettura: {nameXml}- Nessuna lettura da rettificare", connessione);
-                    return false;
-                    }
-                    catch (Exception ex)
-                    {
-                        HubLog.SaveLog2DB("Error", "EE.ControllaRettifica.IsRettificato(PeriodicoNonTrovato)", $"{nameXml}-{ex.Message}", connessione);
-                        return false;
-                    }
-            } 
-
-           
+                return false;
+            }
         }
 
         // Il metodo Rettifica aggiorna il campo Rettificato a true per un record specifico identificato da IdFile nella tabella specificata.
-        private static void Rettifica(string NomeTabella, int Id, SqlConnection connessione)
+        private static void Rettifica(string NomeTabella, int Id, SqlConnection connessione, ILog log)
         {
             try
             {
@@ -89,11 +79,13 @@ namespace Vendita.HubMisureEE.Services
             }
             catch (SqlException ex)
             {
-                HubLog.SaveLog2DB("Error", "ControllaRettifica.Rettifica", ex.Message, connessione);
+                //HubLog.SaveLog2DB("Error", "ControllaRettifica.Rettifica", ex.Message, connessione);
+                log.Error($"ControllaRettifica.Rettifica--Errore SQL nell'aggiornamento della validita per " + ex.Message);
             }
             catch (Exception ex)
             {
-                HubLog.SaveLog2DB("Error", "ControllaRettifica.Rettifica", ex.Message, connessione);
+                //HubLog.SaveLog2DB("Error", "ControllaRettifica.Rettifica", ex.Message, connessione);
+                log.Error($"ControllaRettifica.Rettifica--Errore nell'aggiornamento della validita" + ex.Message);
             }
         }
 
@@ -122,3 +114,4 @@ namespace Vendita.HubMisureEE.Services
     }
     }
 }
+
