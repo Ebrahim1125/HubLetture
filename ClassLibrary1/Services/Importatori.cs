@@ -19,25 +19,22 @@ namespace Vendita.HubMisureEE.Services
             /// - Passa il documento a un metodo di elaborazione che lo salva/elabora nel database.///
             /// 4. In caso di errore, registra il problema su database.
 
-            try
+            int IdFile = 0;
+            int filelavorati = 0;
+
+            List<string> flusso = ZipExtractorService.UnloadZip(folderSorgente, folderLavoro, stringaConnessione, out IdFile, log);
+            foreach (string Doc in flusso)
             {
-                int IdFile = 0;
-
-                List<string> flusso = ZipExtractorService.UnloadZip(folderSorgente, folderLavoro, stringaConnessione, out IdFile, log);
-                foreach (string Doc in flusso)
-
-                {
-                    XmlDocument doc = new XmlDocument();
-                    doc.Load(Path.Combine(folderLavoro, Doc));
-                    CaricaXML.LoadXml(doc, stringaConnessione, folderLavoro, IdFile++, log);
-                }
+                XmlDocument doc = new XmlDocument();
+                doc.Load(Path.Combine(folderLavoro, Doc));
+                CaricaXML.LoadXml(doc, stringaConnessione, folderLavoro, IdFile++, log);
+                filelavorati++;
             }
 
-            catch (Exception e)
-            {
-                //HubLog.SaveLog2DB("Error", "Importatori.cs", e.Message, stringaConnessione);
-                log.Error("Importatori.cs" + e.Message);
-            }
+            Console.WriteLine($"-- N.{filelavorati} files lavorati");
+            log.Info($"Gas.ImportatoreGas.cs/CaricaXML-- {filelavorati} files lavorati");
+
+
         }
     }
 }
