@@ -13,7 +13,7 @@ namespace Vendita.HubMisureEE.Services
             int IdFileXml = 0;
 
             // La query SQL seleziona l'IdFile dalla tabella Letture, unendo con la tabella Curve,
-            // filtrando per i parametri specificati (PIvaUtente, PIvaDistributore, Pod, DataMisura) e verificando se il CodFlusso inizia con 'P'.
+            // filtrando per i parametri specificati (PIvaUtente, PIvaDistributore, Pod, DataMisura)
             try
             {
                 string query = @"SELECT l.IdFile FROM Letture l
