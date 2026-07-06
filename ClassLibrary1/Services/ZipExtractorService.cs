@@ -29,8 +29,8 @@ namespace Vendita.HubMisureEE.Services
                 zipFiles = Directory.GetFiles(inFile, "*.zip");
                 xmlFiles = Directory.GetFiles(inFile, "*.xml");
                 allFiles = zipFiles.Union(xmlFiles).ToArray();
-                Console.WriteLine($"Trovati n.{allFiles.Length()}");
-                log.Info($"ZipExtractorService.cs/UnloadZip - Trovati n.{allFiles.Length()}");
+                Console.WriteLine($"Trovati n.{allFiles.Length}");
+                log.Info($"ZipExtractorService.cs/UnloadZip - Trovati n.{allFiles.Length}");
             }
             catch (FileLoadException ex)
             {
