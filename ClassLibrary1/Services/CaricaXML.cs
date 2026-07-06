@@ -16,6 +16,7 @@ namespace Vendita.HubMisureEE.Services
 
         private static bool IsRettifica(string fileName)
         {
+
             string[] sigleRettifica =
             {
                 "RFO2G", "RNO2G", "RIN2G", "RNV2G", "RSN2G",
@@ -25,6 +26,7 @@ namespace Vendita.HubMisureEE.Services
             };
 
             return sigleRettifica.Any(s => fileName.Contains(s));
+
         }
 
 
