@@ -124,7 +124,7 @@ namespace Vendita.HubMisureEE.Services
 
             //PRELIEVO ULTIMO ID LETTURA
             int IdLettura = 0;
-            string queryId = @"SELECT IDENT_CURRENT('Letture') AS IdLettura";
+            string queryId = @"SELECT IDENT_CURRENT('LettureEE') AS IdLettura";
 
             using (SqlCommand cmd = new SqlCommand(queryId, connessione))
             {
@@ -351,7 +351,7 @@ namespace Vendita.HubMisureEE.Services
 
             //Scrittura col bulk
             Bulk2DB(QE, "Curve", connessione, log);
-            Bulk2DB(dtLetture, "Letture", connessione, log);
+            Bulk2DB(dtLetture, "LettureEE", connessione, log);
             Bulk2DB(FileXml, "FileXml", connessione, log);
 
 
@@ -466,7 +466,7 @@ namespace Vendita.HubMisureEE.Services
             //PRELIEVO ULTIMO ID LETTURA
             int IdLettura = 0;
 
-            string queryId = @"SELECT IDENT_CURRENT('Letture') AS IdLettura";
+            string queryId = @"SELECT IDENT_CURRENT('LettureEE') AS IdLettura";
 
             using (SqlCommand cmd = new SqlCommand(queryId, connessione))
             {
@@ -681,7 +681,7 @@ namespace Vendita.HubMisureEE.Services
             FileXml.Rows.Add(drFile);
 
             //Scrittura col Bulk
-            Bulk2DB(dtLetture, "Letture", connessione, log);
+            Bulk2DB(dtLetture, "LettureEE", connessione, log);
             Bulk2DB(QE, "Curve", connessione, log);
             Bulk2DB(FileXml, "FileXml", connessione, log);
 

@@ -19,14 +19,17 @@ namespace Vendita.HubMisureEE.Services
                 string query = @"SELECT l.IdFile FROM Letture l
                      LEFT JOIN Curve c ON l.Id = c.IdLetture WHERE l.PIvaUtente = @PIvaUtente
                      AND l.PIvaDistributore = @PIvaDistributore
-                     AND l.Pod = @Pod AND l.CodFlusso LIKE 'P%'
+                     AND l.Pod = @Pod 
                      AND l.CodFlusso NOT LIKE 'SMIS'
+                     AND l.CodFlusso NOT LIKE 'SOS'
+                     AND l.CodFlusso NOT LIKE 'S2G'
+                     AND l.CodFlusso NOT LIKE 'SNS'
                      AND ((@DataMisura = DATEFROMPARTS(YEAR(l.MeseAnno), MONTH(l.MeseAnno), c.Giorno) 
                      OR  @DataMisura = l.DataMisura))";
                 using (SqlCommand com = new SqlCommand(query, connessione))
                 {
-                    com.Parameters.Add("@PIvaUtente", SqlDbType.VarChar).Value = PIvaUtente;
-                    com.Parameters.Add("@PIvaDistributore", SqlDbType.VarChar).Value = PIvaDistributore;
+                    com.Parameters.Add("@PIvaUtente", SqlDbType.VarChar).Value = piVaUtente;
+                    com.Parameters.Add("@PIvaDistributore", SqlDbType.VarChar).Value = piVaDistributore;
                     com.Parameters.Add("@Pod", SqlDbType.VarChar).Value = Pod;
                     com.Parameters.Add("@DataMisura", SqlDbType.Date).Value = DataMisure;
                     IdFileXml = Convert.ToInt32(com.ExecuteScalar());
