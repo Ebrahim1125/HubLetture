@@ -30,28 +30,28 @@ namespace Vendita.HubMisureEE.Services
                 xmlFiles = Directory.GetFiles(inFile, "*.xml");
                 allFiles = zipFiles.Union(xmlFiles).ToArray();
                 Console.WriteLine($"Trovati n.{allFiles.Length}");
-                log.Info($"ZipExtractorService.cs/UnloadZip - Trovati n.{allFiles.Length}");
+                log.Info($"EE.ZipExtractorService.cs/UnloadZip - Trovati n.{allFiles.Length}");
             }
             catch (FileLoadException ex)
             {
                 //HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
-                log.Error("ZipExtractorService.cs/UnloadZip" + ex.Message);
+                log.Error("EE.ZipExtractorService.cs/UnloadZip" + ex.Message);
 
             }
             catch (DirectoryNotFoundException ex)
             {
                 //HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
-                log.Error("ZipExtractorService.cs/UnloadZip" + ex.Message);
+                log.Error("EE.ZipExtractorService.cs/UnloadZip" + ex.Message);
             }
             catch (IOException ex)
             {
                 //HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
-                log.Error("ZipExtractorService.cs/UnloadZip" + ex.Message);
+                log.Error("EE.ZipExtractorService.cs/UnloadZip" + ex.Message);
             }
             catch (UnauthorizedAccessException ex)
             {
                 //HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/UnloadZip", ex.Message, stringConnect);
-                log.Error("ZipExtractorService.cs/UnloadZip" + ex.Message);
+                log.Error("EE.ZipExtractorService.cs/UnloadZip" + ex.Message);
             }
 
             DataTable FileXml = new DataTable();
@@ -63,7 +63,7 @@ namespace Vendita.HubMisureEE.Services
                 {
                     conn.Open();
                     //Caricamento dei nomi dei file xml già presenti nel database, con gestione degli errori.
-                    using (var FileXmlDb = new SqlDataAdapter("SELECT IdFile, NomeFile, Lavorato FROM FileXml", conn))
+                    using (var FileXmlDb = new SqlDataAdapter("SELECT IdFile, NomeFile, Lavorato FROM HubLetture.dbo.FileXmlEE", conn))
                     {
                         FileXmlDb.Fill(FileXml);
                         IdFile = FileXml.Rows.Count + 1;
@@ -74,7 +74,7 @@ namespace Vendita.HubMisureEE.Services
             catch (SqlException ex)
             {
                 //HubLog.SaveLog2DB("Error", "ZipExtractorService/Query FileXml", ex.Message, stringConnect);
-                log.Error("ZipExtractorService/Query FileXml " + ex.Message);
+                log.Error("EE.ZipExtractorService/Query FileXmlEE " + ex.Message);
             }
 
             foreach (string item in allFiles)
@@ -93,7 +93,7 @@ namespace Vendita.HubMisureEE.Services
 
                                 int fileCheck = FileXml.Select($"NomeFile = '{file.FilenameInZip}'").Count();
 
-                                if (file.FilenameInZip.ToLower().EndsWith(".xml") && ControlloNomeFile(Path.GetFileName(file.FilenameInZip)) && fileCheck == 0)
+                                if (file.FilenameInZip.EndsWith(".xml") && ControlloNomeFile(file.FilenameInZip) && fileCheck == 0)
                                 {
 
                                     zipfile.ExtractFile(file, Path.Combine(outFile, file.FilenameInZip));
@@ -120,7 +120,7 @@ namespace Vendita.HubMisureEE.Services
                 catch (Exception ex)
                 {
                     //HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/Inserimento nomi nel flusso", ex.Message, stringConnect);
-                    log.Error("ZipExtractorService.cs/Inserimento nomi nel flusso " + ex.Message);
+                    log.Error("EE.ZipExtractorService.cs/Errore inserimento nomi dei flussi " + ex.Message);
                 }
             }
             return flusso;
@@ -128,36 +128,43 @@ namespace Vendita.HubMisureEE.Services
         private static bool ControlloNomeFile(string FileName)
         {
             string[] parti = FileName.Split('_');
+            bool esito = false;
 
-            if (parti.Length < 6)
+            string[] endName = null;
+            if (parti.Length == 6)
             {
-                return false;
+                endName = parti[5].Split('.');
+
+                if (endName[1] == "xml" && parti[0].Length == 11 && parti[1].Length == 11 && parti[2].Length == 6 && parti[3].Length == 3 && parti[4].Length == 14 && endName[0].Length == 7)
+                {
+                    esito = true;
+                    return esito;
+                }
+                else
+                {
+
+                    return false;
+                }
+
+
             }
-
-            string ultimoPezzo = parti[parti.Length - 1];
-
-            string[] endName = ultimoPezzo.Split('.');
-
-            string estensione = endName.Length > 1 ? endName[1].ToLower() : "";
-
-            if ((estensione == "xml" || estensione == "") && parti[0].Length == 11 && parti[1].Length == 11 && parti[2].Length == 6 && parti[4].Length == 14 && parti[5].Split('.')[0].Length == 7)
+            if(parti.Length ==7)
             {
                 endName = parti[6].Split('.');
-                if (endName[1].ToLower() == "xml" && parti[0].Length == 11 && parti[1].Length == 11 && parti[2].Length == 6 && parti[4].Length == 14 && parti[5].Length == 7)
-                    {
-                        return true;
-                    }
+
+                if (endName[1] == "xml" && parti[0].Length == 11 && parti[1].Length == 11 && parti[2].Length == 6 && parti[3].Length <= 6 && parti[4].Length == 14 && parti[5].Length == 7)
+                {
+                    esito = true;
+                    return esito;
+                }
                 else
-                    {
+                {
 
-                return false;
-            }
-            }if(parti.Length ==7)
-            {
-                return false;
+                    return false;
+                }
             }
 
-            
+            return esito;
         }
     }
 }

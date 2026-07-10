@@ -31,8 +31,8 @@ namespace Vendita.HubMisureEE.Services
                 filelavorati++;
             }
 
-            Console.WriteLine($"-- N.{filelavorati} files lavorati");
-            log.Info($"Gas.ImportatoreGas.cs/CaricaXML-- {filelavorati} files lavorati");
+            Console.WriteLine($"N.{filelavorati} files lavorati");
+            log.Info($"EE.ImportatoreGas.cs/CaricaXML-- {filelavorati} files lavorati");
 
 
         }

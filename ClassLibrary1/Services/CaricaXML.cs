@@ -1,12 +1,14 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.CodeDom;
 using System.Data.SqlClient;
+using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.Serialization;
 using System.Xml;
 using System.Xml.Serialization;
-using log4net;
 
 
 namespace Vendita.HubMisureEE.Services
@@ -35,7 +37,7 @@ namespace Vendita.HubMisureEE.Services
             if (Doc == null)
             {
                 //HubLog.SaveLog2DB("Error", "CaricaXml.LoadXml", "XmlDocument is null", connectionString);
-                log.Error("CaricaXml.LoadXml, XmlDocument is null");
+                log.Error("EE.CaricaXml.LoadXml, XmlDocument is null");
                 return;
             }
 
@@ -58,29 +60,31 @@ namespace Vendita.HubMisureEE.Services
                     catch (FileNotFoundException fn)
                     {
                         //HubLog.SaveLog2DB("Error", "CaricaXML.LoadXml(FileNotFound)", fn.Message, connessione);
-                        log.Error("CaricaXML.LoadXml(FileNotFound)" + fn.Message);
+                        log.Error("EE.CaricaXML.LoadXml(FileNotFound)" + fn.Message);
                     }
                     catch (FileLoadException fl)
                     {
                         //HubLog.SaveLog2DB("Error", "CaricaXML.LoadXml(FileLoad)", fl.Message, connessione);
-                        log.Error("CaricaXML.LoadXml(FileLoad)" + fl.Message);
+                        log.Error("EE.CaricaXML.LoadXml(FileLoad)" + fl.Message);
                     }
                     catch (FileFormatException ff)
                     {
                         //HubLog.SaveLog2DB("Error", "CaricaXML.LoadXml(FileFormat)", ff.Message, connessione);
-                        log.Error("CaricaXML.LoadXml(FileFormat)" + ff.Message);
+                        log.Error("EE.CaricaXML.LoadXml(FileFormat)" + ff.Message);
                     }
                     catch (Exception ex)
                     {
                         //HubLog.SaveLog2DB("Error", "CaricaXML.LoadXml(UnknownError)", ex.Message, connessione);
-                        log.Error("CaricaXML.LoadXml(UnknownError)" + ex.Message);
+                        log.Error("EE.CaricaXML.LoadXml(UnknownError)" + ex.Message);
                     }
 
                     bool isSmis = IsSmis(fileName);
                     bool isRettifica = IsRettifica(fileName);
                     bool isPeriodica = IsPeriodico(fileName);
+                    bool isFlussoS = IsFlussoS(fileName);
+                    bool isFlussoF = IsFlussoF(fileName);
 
-                    Type tipoDaUsare;
+                    Type tipoDaUsare = null;
 
                     if (IsSmis(fileName))
                     {
@@ -90,9 +94,17 @@ namespace Vendita.HubMisureEE.Services
                     {
                         tipoDaUsare = typeof(Models.Rettifica.FlussoMisure);
                     }
-                    else
+                    else if (IsPeriodico(fileName))
                     {
                         tipoDaUsare = typeof(Models.Periodico.FlussoMisure);
+                    }
+                    else if (IsFlussoS(fileName))
+                    {
+                        tipoDaUsare = typeof(Models.FlussoS.FlussoMisure);
+                    }
+                    else if (IsFlussoF(fileName))
+                    {
+                        tipoDaUsare = typeof(Models.FlussoF.FlussoMisure);
                     }
 
                     XmlSerializer serializer = new XmlSerializer(tipoDaUsare);
@@ -109,20 +121,20 @@ namespace Vendita.HubMisureEE.Services
                     catch (SerializationException se)
                     {
                         //HubLog.SaveLog2DB("Error", "CaricaXml.Deserialize", $"Errore durante la deserializzazione del file {fileName}: {se}", connessione);
-                        log.Error($"Errore durante la deserializzazione del file {fileName}: {se}");
+                        log.Error($"EE.Errore durante la deserializzazione del file {fileName}: {se}");
                         return;
                     }
                     catch (Exception ex)
                     {
                         //HubLog.SaveLog2DB("Error", "CaricaXml.Deserialize", $"Errore durante la deserializzazione del file {fileName}: {ex}", connessione);
-                        log.Error($"Errore durante la deserializzazione del file {fileName}: {ex}");
+                        log.Error($"EE.Errore durante la deserializzazione del file {fileName}: {ex}");
                         return;
                     }
 
                     if (flussoGenerico == null)
                     {
                         //HubLog.SaveLog2DB("Warning", "CaricaXml.Deserialize", $"Deserializzazione nulla per il file {fileName}", connessione);
-                        log.Error($"Deserializzazione nulla per il file {fileName}");
+                        log.Error($"EE.Deserializzazione nulla per il file {fileName}");
                         return;
                     }
 
@@ -136,16 +148,23 @@ namespace Vendita.HubMisureEE.Services
                         {
                             SaveFlusso.SaveFlusso2DB((Models.Rettifica.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName, log);
                         }
-
-                        else
+                        else if(isSmis)
                         {
                             SaveFlusso.SaveFlusso2DB((Models.Smis.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName, log);
+                        }
+                        else if (isFlussoF)
+                        {
+                            SaveFlusso.SaveFlusso2DB((Models.FlussoF.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName, log);
+                        }
+                        else if (isFlussoS)
+                        {
+                            SaveFlusso.SaveFlusso2DB((Models.FlussoS.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName, log);
                         }
                     }
                     catch (Exception ex)
                     {
                         //HubLog.SaveLog2DB("Error", "CaricaXml.SaveFlusso2DB", $"Errore durante la lavorazione del file {fileName}: {ex}", connessione);
-                        log.Error($"Errore durante la lavorazione del file {fileName}: {ex}");
+                        log.Error($"EE.Errore durante la lavorazione del file {fileName}: {ex}");
                         return;
                     }
                 }
@@ -153,7 +172,7 @@ namespace Vendita.HubMisureEE.Services
             catch (Exception ex)
             {
                 //HubLog.SaveLog2DB("Error", "CaricaXml.LoadXml", ex.ToString(), connectionString);
-                log.Error("CaricaXml.LoadXml" + ex.ToString());
+                log.Error("EE.CaricaXml.LoadXml" + ex.ToString());
             }
         }
 
@@ -167,6 +186,16 @@ namespace Vendita.HubMisureEE.Services
         {
             string[] sigleSmis = { "SMIS" };
             return sigleSmis.Any(s => filename.Contains(s));
+        }
+        private static bool IsFlussoS(string filename)
+        {
+            string[] singleFlussoS = { "SOS", "S2G", "SNS" };
+            return singleFlussoS.Any(s => filename.Contains(s));
+        }
+        private static bool IsFlussoF(string filename)
+        {
+            string[] singleFlussoF = { "SOF", "SNF", "F2G" };
+            return singleFlussoF.Any(s => filename.Contains(s));
         }
     }
 
