@@ -16,7 +16,7 @@ namespace Vendita.HubMisureEE.Services
     public class CaricaXML
     {
 
-        public static void LoadXml(XmlDocument Doc, string connectionString, string FolderLavoro, int IdFile, ILog log)
+        public static void LoadXml(XmlDocument Doc, string DBNameEString, string FolderLavoro, int IdFile, ILog log)
         {
             if (Doc == null)
             {
@@ -25,14 +25,15 @@ namespace Vendita.HubMisureEE.Services
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(connectionString))
+            if (string.IsNullOrWhiteSpace(DBNameEString))
             {
                 return;
             }
 
             try
             {
-                using (SqlConnection connessione = new SqlConnection(connectionString))
+                string[] elementDB = DBNameEString.Split('_');
+                using (SqlConnection connessione = new SqlConnection(elementDB[1]))
                 {
                     connessione.Open();
                     string fileName = string.Empty;
@@ -129,23 +130,23 @@ namespace Vendita.HubMisureEE.Services
                     {
                         if (isPeriodica)
                         {
-                            SaveFlusso.SaveFlusso2DB((Models.Periodico.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName, log);
+                            SaveFlusso.SaveFlusso2DB((Models.Periodico.FlussoMisure)flussoGenerico, elementDB[0], connessione, FolderLavoro, IdFile, fileName, log);
                         }
                         else if (isRettifica)
                         {
-                            SaveFlusso.SaveFlusso2DB((Models.Rettifica.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName, log);
+                            SaveFlusso.SaveFlusso2DB((Models.Rettifica.FlussoMisure)flussoGenerico, elementDB[0], connessione, FolderLavoro, IdFile, fileName, log);
                         }
                         else if(isSmis)
                         {
-                            SaveFlusso.SaveFlusso2DB((Models.Smis.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName, log);
+                            SaveFlusso.SaveFlusso2DB((Models.Smis.FlussoMisure)flussoGenerico, elementDB[0], connessione, FolderLavoro, IdFile, fileName, log);
                         }
                         else if (isFlussoF)
                         {
-                            SaveFlusso.SaveFlusso2DB((Models.FlussoF.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName, log);
+                            SaveFlusso.SaveFlusso2DB((Models.FlussoF.FlussoMisure)flussoGenerico, elementDB[0], connessione, FolderLavoro, IdFile, fileName, log);
                         }
                         else if (isFlussoS)
                         {
-                            SaveFlusso.SaveFlusso2DB((Models.FlussoS.FlussoMisure)flussoGenerico, connessione, FolderLavoro, IdFile, fileName, log);
+                            SaveFlusso.SaveFlusso2DB((Models.FlussoS.FlussoMisure)flussoGenerico, elementDB[0], connessione, FolderLavoro, IdFile, fileName, log);
                         }
                     }
                     catch (Exception ex)
