@@ -104,8 +104,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\FlussoF.cs" />
     <Compile Include="Models\FlussoMisurePeriodico.cs" />
     <Compile Include="Models\FlussoMisureRettifica.cs" />
+    <Compile Include="Models\FlussoS.cs" />
     <Compile Include="Models\FlussoSMIS.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\ControlloRettifica.cs" />

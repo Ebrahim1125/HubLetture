@@ -10,6 +10,8 @@ using System.Xml.Serialization;
 using Vendita.HubMisureEE.Models.Periodico;
 using Vendita.HubMisureEE.Models.Rettifica;
 using Vendita.HubMisureEE.Models.Smis;
+using Vendita.HubMisureEE.Models.FlussoF;
+using Vendita.HubMisureEE.Models.FlussoS;
 using log4net;
 
 namespace Vendita.HubMisureEE.Services
@@ -124,7 +126,7 @@ namespace Vendita.HubMisureEE.Services
 
             //PRELIEVO ULTIMO ID LETTURA
             int IdLettura = 0;
-            string queryId = @"SELECT IDENT_CURRENT('LettureEE') AS IdLettura";
+            string queryId = @"SELECT IDENT_CURRENT('HubLetture.dbo.LettureEE') AS IdLettura";
 
             using (SqlCommand cmd = new SqlCommand(queryId, connessione))
             {
@@ -183,7 +185,7 @@ namespace Vendita.HubMisureEE.Services
 
                 // VARIABILE DINAMICA 
                 dynamic d = pod.Item;
-                DettaglioConsumoV2Type consumo = d as DettaglioConsumoV2Type;
+                Models.Periodico.DettaglioConsumoV2Type consumo = d as Models.Periodico.DettaglioConsumoV2Type;
 
                 IdLettura++;
 
@@ -289,7 +291,7 @@ namespace Vendita.HubMisureEE.Services
                 catch (Exception ex)
                 {
                     //HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow letture per il POD {pod.Pod}: {ex.Message}", connessione);
-                    log.Error("SaveFlusso2DB - Errore durante la creazione della DataRow letture per il POD" + pod.Pod + ex.Message);
+                    log.Error("EE.SaveFlusso2DB - Errore durante la creazione della DataRow letture per il POD" + pod.Pod + ex.Message);
                 }
 
                 // CREAZIONE DATAROW QUARTINI
@@ -328,7 +330,7 @@ namespace Vendita.HubMisureEE.Services
                 catch (Exception ex)
                 {
                     //HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow quartini per il POD {pod.Pod}: {ex.Message}", connessione);
-                    log.Error("SaveFlusso2DB - Errore durante la creazione della DataRow quartini per il POD " + pod.Pod + ex.Message);
+                    log.Error("EE.SaveFlusso2DB - Errore durante la creazione della DataRow quartini per il POD " + pod.Pod + ex.Message);
                 }
             }
 
@@ -344,15 +346,15 @@ namespace Vendita.HubMisureEE.Services
             catch (Exception ex)
             {
                 //HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow FileXml per il file {fileName}: {ex.Message}", connessione);
-                log.Error("SaveFlusso2DB - Errore durante la creazione della DataRow FileXml per il file" + fileName + ex.Message);
+                log.Error("EE.SaveFlusso2DB - Errore durante la creazione della DataRow FileXml per il file" + fileName + ex.Message);
 
             }
 
 
             //Scrittura col bulk
-            Bulk2DB(QE, "Curve", connessione, log);
-            Bulk2DB(dtLetture, "LettureEE", connessione, log);
-            Bulk2DB(FileXml, "FileXml", connessione, log);
+            Bulk2DB(QE, "HubLetture.dbo.CurveEE", connessione, log);
+            Bulk2DB(dtLetture, "HubLetture.dbo.LettureEE", connessione, log);
+            Bulk2DB(FileXml, "HubLetture.dbo.FileXmlEE", connessione, log);
 
 
             FileLavorato(FolderLavoro, fileName, connessione, log);
@@ -466,7 +468,7 @@ namespace Vendita.HubMisureEE.Services
             //PRELIEVO ULTIMO ID LETTURA
             int IdLettura = 0;
 
-            string queryId = @"SELECT IDENT_CURRENT('LettureEE') AS IdLettura";
+            string queryId = @"SELECT IDENT_CURRENT('HubLetture.dbo.LettureEE') AS IdLettura";
 
             using (SqlCommand cmd = new SqlCommand(queryId, connessione))
             {
@@ -681,9 +683,9 @@ namespace Vendita.HubMisureEE.Services
             FileXml.Rows.Add(drFile);
 
             //Scrittura col Bulk
-            Bulk2DB(dtLetture, "LettureEE", connessione, log);
-            Bulk2DB(QE, "Curve", connessione, log);
-            Bulk2DB(FileXml, "FileXml", connessione, log);
+            Bulk2DB(dtLetture, "HubLetture.dbo.LettureEE", connessione, log);
+            Bulk2DB(QE, "HubLetture.dbo.CurveEE", connessione, log);
+            Bulk2DB(FileXml, "HubLetture.dbo.FileXmlEE", connessione, log);
 
 
             FileLavorato(FolderLavoro, fileName, connessione, log);
@@ -697,113 +699,113 @@ namespace Vendita.HubMisureEE.Services
             string timeStamp = arrName[4];
 
             //PREPARAZIONE DATATABLE
-            DataTable dtLettureSmisEE = new DataTable();
+            DataTable dtLetture = new DataTable();
 
-            dtLettureSmisEE.Columns.Add("Id", typeof(int)).AutoIncrement = true;
-            dtLettureSmisEE.Columns.Add("CodFlusso", typeof(string));
-            dtLettureSmisEE.Columns.Add("PIvaUtente", typeof(string));
-            dtLettureSmisEE.Columns.Add("PIvaDistributore", typeof(string));
-            dtLettureSmisEE.Columns.Add("CodContrDisp", typeof(string));
-            dtLettureSmisEE.Columns.Add("Pod", typeof(string));
-            dtLettureSmisEE.Columns.Add("Motivazione", typeof(string));
-            dtLettureSmisEE.Columns.Add("TipologiaMisuratoreSmontaggio", typeof(string));
-            dtLettureSmisEE.Columns.Add("DataMisuraSmontaggio", typeof(DateTime));
-            dtLettureSmisEE.Columns.Add("SmontaggioTipoDato", typeof(string));
-            dtLettureSmisEE.Columns.Add("SmontaggioEaF1", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioEaF2", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioEaF3", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioEaF4", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioEaF5", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioEaF6", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioErF1", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioErF2", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioErF3", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioErF4", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioErF5", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioErF6", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioPotF1", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioPotF2", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioPotF3", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioPotF4", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioPotF5", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioPotF6", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioEaM", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioErM", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioPotM", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioErcF1", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioErcF2", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioErcF3", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioErcF4", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioErcF5", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioErcF6", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioErcM", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioEriF1", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioEriF2", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioEriF3", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioEriF4", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioEriF5", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioEriF6", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("SmontaggioEriM", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("TipologiaMisuratoreMontaggio", typeof(string));
-            dtLettureSmisEE.Columns.Add("DataMisuraMontaggio", typeof(DateTime));
-            dtLettureSmisEE.Columns.Add("DataMessaReggime", typeof(DateTime));
-            dtLettureSmisEE.Columns.Add("Tensione", typeof(int));
-            dtLettureSmisEE.Columns.Add("Ka", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("Kr", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("Kp", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MatrAtt", typeof(string));
-            dtLettureSmisEE.Columns.Add("MatrRea", typeof(string));
-            dtLettureSmisEE.Columns.Add("MatrPot", typeof(string));
-            dtLettureSmisEE.Columns.Add("CifreAtt", typeof(string));
-            dtLettureSmisEE.Columns.Add("CifreRea", typeof(string));
-            dtLettureSmisEE.Columns.Add("CifrePot", typeof(string));
-            dtLettureSmisEE.Columns.Add("MontaggioEaF1", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioEaF2", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioEaF3", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioEaF4", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioEaF5", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioEaF6", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioErF1", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioErF2", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioErF3", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioErF4", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioErF5", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioErF6", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioPotF1", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioPotF2", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioPotF3", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioPotF4", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioPotF5", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioPotF6", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioEaM", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioErM", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioPotM", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioErcF1", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioErcF2", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioErcF3", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioErcF4", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioErcF5", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioErcF6", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioErcM", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioEriF1", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioEriF2", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioEriF3", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioEriF4", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioEriF5", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioEriF6", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MontaggioEriM", typeof(decimal));
-            dtLettureSmisEE.Columns.Add("MeseAnno", typeof(DateTime));
-            dtLettureSmisEE.Columns.Add("IdFile", typeof(int));
-            dtLettureSmisEE.Columns.Add("TimeStamp", typeof(string));
-            dtLettureSmisEE.Columns.Add("Valido", typeof(bool));
+            dtLetture.Columns.Add("Id", typeof(int)).AutoIncrement = true;
+            dtLetture.Columns.Add("CodFlusso", typeof(string));
+            dtLetture.Columns.Add("PIvaUtente", typeof(string));
+            dtLetture.Columns.Add("PIvaDistributore", typeof(string));
+            dtLetture.Columns.Add("CodContrDisp", typeof(string));
+            dtLetture.Columns.Add("Pod", typeof(string));
+            dtLetture.Columns.Add("Motivazione", typeof(string));
+            dtLetture.Columns.Add("TipologiaMisuratoreSmontaggio", typeof(string));
+            dtLetture.Columns.Add("DataMisuraSmontaggio", typeof(DateTime));
+            dtLetture.Columns.Add("SmontaggioTipoDato", typeof(string));
+            dtLetture.Columns.Add("SmontaggioEaF1", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioEaF2", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioEaF3", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioEaF4", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioEaF5", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioEaF6", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioErF1", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioErF2", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioErF3", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioErF4", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioErF5", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioErF6", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioPotF1", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioPotF2", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioPotF3", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioPotF4", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioPotF5", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioPotF6", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioEaM", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioErM", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioPotM", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioErcF1", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioErcF2", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioErcF3", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioErcF4", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioErcF5", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioErcF6", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioErcM", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioEriF1", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioEriF2", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioEriF3", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioEriF4", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioEriF5", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioEriF6", typeof(decimal));
+            dtLetture.Columns.Add("SmontaggioEriM", typeof(decimal));
+            dtLetture.Columns.Add("TipologiaMisuratoreMontaggio", typeof(string));
+            dtLetture.Columns.Add("DataMisuraMontaggio", typeof(DateTime));
+            dtLetture.Columns.Add("DataMessaReggime", typeof(DateTime));
+            dtLetture.Columns.Add("Tensione", typeof(int));
+            dtLetture.Columns.Add("Ka", typeof(decimal));
+            dtLetture.Columns.Add("Kr", typeof(decimal));
+            dtLetture.Columns.Add("Kp", typeof(decimal));
+            dtLetture.Columns.Add("MatrAtt", typeof(string));
+            dtLetture.Columns.Add("MatrRea", typeof(string));
+            dtLetture.Columns.Add("MatrPot", typeof(string));
+            dtLetture.Columns.Add("CifreAtt", typeof(string));
+            dtLetture.Columns.Add("CifreRea", typeof(string));
+            dtLetture.Columns.Add("CifrePot", typeof(string));
+            dtLetture.Columns.Add("MontaggioEaF1", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioEaF2", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioEaF3", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioEaF4", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioEaF5", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioEaF6", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioErF1", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioErF2", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioErF3", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioErF4", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioErF5", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioErF6", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioPotF1", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioPotF2", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioPotF3", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioPotF4", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioPotF5", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioPotF6", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioEaM", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioErM", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioPotM", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioErcF1", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioErcF2", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioErcF3", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioErcF4", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioErcF5", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioErcF6", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioErcM", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioEriF1", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioEriF2", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioEriF3", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioEriF4", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioEriF5", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioEriF6", typeof(decimal));
+            dtLetture.Columns.Add("MontaggioEriM", typeof(decimal));
+            dtLetture.Columns.Add("MeseAnno", typeof(DateTime));
+            dtLetture.Columns.Add("IdFile", typeof(int));
+            dtLetture.Columns.Add("TimeStamp", typeof(string));
+            dtLetture.Columns.Add("Valido", typeof(bool));
 
 
-            dtLettureSmisEE.PrimaryKey = new DataColumn[] { dtLettureSmisEE.Columns["Id"] };
+            dtLetture.PrimaryKey = new DataColumn[] { dtLetture.Columns["Id"] };
 
             //PRELIEVO ULTIMO ID LETTURA
             int IdLettura = 0;
 
-            string queryId = @"SELECT IDENT_CURRENT('LettureSmisEE') AS IdLettura";
+            string queryId = @"SELECT IDENT_CURRENT('HubLetture.dbo.LettureSmisEE') AS IdLettura";
 
             using (SqlCommand cmd = new SqlCommand(queryId, connessione))
             {
@@ -817,7 +819,7 @@ namespace Vendita.HubMisureEE.Services
                 Models.Smis.FlussoMisureDatiPod pod = FlussoSmis.DatiPod[j];
                 IdLettura++;
 
-                DataRow dr = dtLettureSmisEE.NewRow();
+                DataRow dr = dtLetture.NewRow();
 
                 dr["Id"] = IdLettura;
                 dr["CodFlusso"] = FlussoSmis.CodFlusso;
@@ -825,7 +827,7 @@ namespace Vendita.HubMisureEE.Services
                 dr["PIvaDistributore"] = FlussoSmis.IdentificativiFlusso.PIvaDistributore;
                 dr["CodContrDisp"] = FlussoSmis.IdentificativiFlusso.CodContrDisp;
                 dr["Pod"] = pod.Pod;
-                dr["Motivazione"] = GetXmlEnumValue(pod.Motivazione);
+                dr["Motivazione"] = pod.Motivazione;
                 dr["TipologiaMisuratoreSmontaggio"] = pod.Smontaggio.TipoMisuratore.ToString();
                 dr["DataMisuraSmontaggio"] = pod.Smontaggio.DataMisura;
                 dr["SmontaggioTipoDato"] = pod.Smontaggio.TipoDato;
@@ -835,7 +837,7 @@ namespace Vendita.HubMisureEE.Services
                 {
                     string nomeColonna = $"Smontaggio{pod.Smontaggio.ItemsElementName[i]}";
 
-                    if (dtLettureSmisEE.Columns.Contains(nomeColonna))
+                    if (dtLetture.Columns.Contains(nomeColonna))
                     {
                         dr[nomeColonna] = pod.Smontaggio.Items[i];
                     }
@@ -861,7 +863,7 @@ namespace Vendita.HubMisureEE.Services
                 {
                     string nomeColonna = $"Montaggio{pod.Montaggio.ItemsElementName[i]}";
 
-                    if (dtLettureSmisEE.Columns.Contains(nomeColonna))
+                    if (dtLetture.Columns.Contains(nomeColonna))
                     {
                         dr[nomeColonna] = pod.Montaggio.Items[i];
                     }
@@ -872,7 +874,7 @@ namespace Vendita.HubMisureEE.Services
                 dr["TimeStamp"] = timeStamp;
                 dr["Valido"] = true;
 
-                dtLettureSmisEE.Rows.Add(dr);
+                dtLetture.Rows.Add(dr);
             }
 
             //scrittura per Tabella Xml
@@ -894,9 +896,389 @@ namespace Vendita.HubMisureEE.Services
             FileLavorato(FolderLavoro, fileName, connessione, log);
 
             //Scrittura col Bulk
-            Bulk2DB(dtLettureSmisEE, "LettureSmisEE", connessione, log);
-            Bulk2DB(FileXml, "FileXml", connessione, log);
+            Bulk2DB(dtLetture, "HubLetture.dbo.LettureSmisEE", connessione, log);
+            Bulk2DB(FileXml, "HubLetture.dbo.FileXmlEE", connessione, log);
 
+        }
+
+        public static void SaveFlusso2DB(Models.FlussoF.FlussoMisure FlussoMisura, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName, ILog log)
+        {
+            if (FlussoMisura == null || FlussoMisura.DatiPod == null || FlussoMisura.DatiPod.Length == 0)
+                return;
+
+            //ESTRAZIONE TIMESTAMP DAL NOME FILE
+            string[] arrName = fileName.Split('_');
+            string timeStamp = arrName[4];
+
+            //PREPARAZIONE DATATABLE
+            DataTable dtLetture = new DataTable();
+            dtLetture.Columns.Add("Id", typeof(int));
+            dtLetture.Columns.Add("CodFlusso", typeof(string));
+            dtLetture.Columns.Add("PIvaUtente", typeof(string));
+            dtLetture.Columns.Add("PIvaDistributore", typeof(string));
+            dtLetture.Columns.Add("Pod", typeof(string));
+            dtLetture.Columns.Add("MeseAnno", typeof(DateTime));
+            dtLetture.Columns.Add("CodContrDisp", typeof(string));
+            dtLetture.Columns.Add("CodPratAtt", typeof(string));
+            dtLetture.Columns.Add("DataInizio", typeof(DateTime));
+            dtLetture.Columns.Add("PuntoDispacciamento", typeof(string));
+            dtLetture.Columns.Add("MessaRegime", typeof(string));
+            dtLetture.Columns.Add("DataMessaRegime", typeof(DateTime));
+            dtLetture.Columns.Add("Trattamento", typeof(string));
+            dtLetture.Columns.Add("Tensione", typeof(int));
+            dtLetture.Columns.Add("TipoMisuratore", typeof(string));
+            dtLetture.Columns.Add("TipoDato", typeof(string));
+            dtLetture.Columns.Add("PotMax", typeof(decimal));
+            dtLetture.Columns.Add("PotImp", typeof(decimal));
+            dtLetture.Columns.Add("PotDisp", typeof(decimal));
+            dtLetture.Columns.Add("Ka", typeof(decimal));
+            dtLetture.Columns.Add("Kr", typeof(decimal));
+            dtLetture.Columns.Add("Kp", typeof(decimal));
+            dtLetture.Columns.Add("EaF1", typeof(decimal));
+            dtLetture.Columns.Add("EaF2",typeof(decimal));
+            dtLetture.Columns.Add("EaF3",typeof(decimal));
+            dtLetture.Columns.Add("EaF4",typeof(decimal));
+            dtLetture.Columns.Add("EaF5",typeof(decimal));
+            dtLetture.Columns.Add("EaF6",typeof(decimal));
+            dtLetture.Columns.Add("EaM", typeof(decimal));
+            dtLetture.Columns.Add("PotF1",typeof(decimal));
+            dtLetture.Columns.Add("PotF2",typeof(decimal));
+            dtLetture.Columns.Add("PotF3",typeof(decimal));
+            dtLetture.Columns.Add("PotF4",typeof(decimal));
+            dtLetture.Columns.Add("PotF5",typeof(decimal));
+            dtLetture.Columns.Add("PotF6",typeof(decimal));
+            dtLetture.Columns.Add("PotM",typeof(decimal));
+            dtLetture.Columns.Add("EaF1Std",typeof(decimal));
+            dtLetture.Columns.Add("EaF2Std",typeof(decimal));
+            dtLetture.Columns.Add("EaF3Std", typeof(decimal));
+            dtLetture.Columns.Add("MatrAtt", typeof(string));
+            dtLetture.Columns.Add("MatrRea", typeof(string));
+            dtLetture.Columns.Add("MatrPot", typeof(string));
+            dtLetture.Columns.Add("DataInstMisAtt", typeof(DateTime));
+            dtLetture.Columns.Add("DataInstMisRea", typeof(DateTime));
+            dtLetture.Columns.Add("DataInstMisPot", typeof(DateTime));
+            dtLetture.Columns.Add("CifreAtt", typeof(int));
+            dtLetture.Columns.Add("CifreRea", typeof(int));
+            dtLetture.Columns.Add("CifrePot", typeof(int));
+            dtLetture.Columns.Add("GruppoMis", typeof(string));
+            dtLetture.Columns.Add("Forfait", typeof(string));
+            dtLetture.Columns.Add("CodiceTariffa", typeof(string));
+            dtLetture.Columns.Add("Residena", typeof(string));
+            dtLetture.Columns.Add("Disalimentabilità", typeof(string));
+            dtLetture.Columns.Add("ServizioTutela", typeof(string));
+            dtLetture.Columns.Add("RegimeCompesazione", typeof(string));
+            dtLetture.Columns.Add("ConfigurazioneMisuratore", typeof(string));
+            dtLetture.Columns.Add("IdFile", typeof(int));
+            dtLetture.Columns.Add("TimeStamp", typeof(string));
+            dtLetture.Columns.Add("Valido", typeof(bool));
+
+            dtLetture.PrimaryKey = new DataColumn[] { dtLetture.Columns["Id"] };
+
+            DataTable FileXml = new DataTable();
+
+            //scrittura per Tabella Xml
+            FileXml.Columns.Add("IdFile", typeof(int)).AutoIncrement = true;
+            FileXml.Columns.Add("DataIns", typeof(DateTime));
+            FileXml.Columns.Add("NomeFile", typeof(string)).MaxLength = 250;
+            FileXml.Columns.Add("FileXml", typeof(string));
+            FileXml.Columns.Add("Valido", typeof(bool));
+
+
+            //PRELIEVO ULTIMO ID LETTURA
+            int IdLettura = 0;
+            string queryId = @"SELECT IDENT_CURRENT('HubLetture.dbo.LettureSF') AS IdLettura";
+
+            using (SqlCommand cmd = new SqlCommand(queryId, connessione))
+            {
+                object result = cmd.ExecuteScalar();
+                IdLettura = Convert.ToInt32(result);
+            }
+
+            for (int j = 0; j < FlussoMisura.DatiPod.Length; j++)
+            {
+                Models.FlussoF.FlussoMisureDatiPod pod = FlussoMisura.DatiPod[j];
+
+                IdLettura++;
+
+                try
+                {
+                    DataRow dr = dtLetture.NewRow();
+
+                    //dr["PotM"] = pod.Consumo.PotM ?? (Object)DBNull.Value;
+                    //dr["EaF1Std"] = (Object)pod.Consumo_StD?.EaF1_StD ?? DBNull.Value;
+
+                    Object nullo = DBNull.Value;
+
+                    dr["Id"] = IdLettura;
+                    dr["CodFlusso"] = FlussoMisura.CodFlusso;
+                    dr["PIvaUtente"] = FlussoMisura.IdentificativiFlusso.PIvaUtente;
+                    dr["PIvaDistributore"] = FlussoMisura.IdentificativiFlusso.PIvaDistributore; 
+                    dr["Pod"] = pod.Pod;
+                    dr["CodContrDisp"] = FlussoMisura.IdentificativiFlusso.CodContrDisp ?? (Object)DBNull.Value; 
+                    dr["CodPratAtt"] = pod.CodPrat_SII ?? (Object)DBNull.Value;
+                    dr["DataInizio"] = pod.DataInizio ?? (Object)DBNull.Value; 
+                    dr["PuntoDispacciamento"] = (Object)pod.DatiPdp.PuntoDispacciamento ?? DBNull.Value;
+                    dr["DataMessaRegime"] = (pod.DatiPdp.DataMessaRegime2G is null || pod.DatiPdp.DataMessaRegime2G == string.Empty) ? nullo : pod.DatiPdp.DataMessaRegime2G;
+                    dr["Trattamento"] = (Object)pod.DatiPdp.Trattamento ?? DBNull.Value;
+                    dr["Tensione"] = (pod.DatiPdp.Tensione is null || pod.DatiPdp.Tensione == string.Empty) ? nullo : pod.DatiPdp.Tensione;
+                    dr["TipoMisuratore"] = (Object)pod.DatiPdp.TipoMisuratore ?? DBNull.Value; 
+                    dr["PotImp"] = (pod.DatiPdp.PotImp is null || pod.DatiPdp.PotImp == string.Empty) ? nullo : pod.DatiPdp.PotImp;
+                    dr["PotDisp"] = (pod.DatiPdp.PotDisp is null || pod.DatiPdp.PotDisp == string.Empty) ? nullo : pod.DatiPdp.PotDisp;
+                    dr["Ka"] = (pod.DatiPdp.Ka is null || pod.DatiPdp.Ka == string.Empty) ? nullo : pod.DatiPdp.Ka;
+                    dr["Kr"] =(pod.DatiPdp.Kr is null || pod.DatiPdp.Kr == string.Empty) ? nullo : pod.DatiPdp.Kr;
+                    dr["Kp"] = (pod.DatiPdp.Kp is null || pod.DatiPdp.Kp == string.Empty) ? nullo : pod.DatiPdp.Kp;
+                    dr["MatrAtt"] = (pod.DatiPdp.MatrAtt is null || pod.DatiPdp.MatrAtt == string.Empty) ? nullo : pod.DatiPdp.MatrAtt; 
+                    dr["MatrRea"] = (pod.DatiPdp.MatrRea is null || pod.DatiPdp.MatrRea == string.Empty) ? nullo : pod.DatiPdp.MatrRea;
+                    dr["MatrPot"] = (pod.DatiPdp.MatrPot is null || pod.DatiPdp.MatrPot == string.Empty) ? nullo : pod.DatiPdp.MatrPot;
+                    dr["DataInstMisAtt"] = (pod.DatiPdp.DataInstMisAtt is null || pod.DatiPdp.DataInstMisAtt == string.Empty) ? nullo : pod.DatiPdp.DataInstMisAtt; 
+                    dr["DataInstMisRea"] = (pod.DatiPdp.DataInstMisRea is null || pod.DatiPdp.DataInstMisRea == string.Empty) ? nullo : pod.DatiPdp.DataInstMisRea;
+                    dr["DataInstMisPot"] = (pod.DatiPdp.DataInstMisPot is null || pod.DatiPdp.DataInstMisPot == string.Empty) ? nullo : pod.DatiPdp.DataInstMisPot;
+                    dr["CifreAtt"] = (pod.DatiPdp.CifreAtt is null || pod.DatiPdp.CifreAtt == string.Empty) ? nullo : pod.DatiPdp.CifreAtt;
+                    dr["CifreRea"] = (pod.DatiPdp.CifrePot is null || pod.DatiPdp.CifrePot == string.Empty) ? nullo : pod.DatiPdp.CifrePot;
+                    dr["CifrePot"] = (pod.DatiPdp.CifrePot is null || pod.DatiPdp.CifrePot == string.Empty) ? nullo : pod.DatiPdp.CifrePot;
+                    dr["GruppoMis"] = pod.DatiPdp.GruppoMis;
+                    dr["Forfait"] = pod.DatiPdp.Forfait ;
+                    dr["CodiceTariffa"] = (pod.DatiPdp.CodiceTariffa is null || pod.DatiPdp.CodiceTariffa == string.Empty) ? nullo : pod.DatiPdp.CodiceTariffa;
+                    dr["Residena"] = pod.DatiPdp.Residenza;
+                    dr["Disalimentabilità"] = pod.DatiPdp.GruppoMis;
+                    dr["ServizioTutela"] = pod.DatiPdp.ServizioTutela;
+                    dr["RegimeCompesazione"] = pod.DatiPdp.RegimeComp;
+                    dr["ConfigurazioneMisuratore"] = pod.DatiPdp.ConfMis;
+                    dr["TimeStamp"] = timeStamp;
+                    dr["Valido"] = true;
+
+                    dtLetture.Rows.Add(dr);
+                }
+                catch (Exception ex)
+                {
+                    log.Error("EE.SaveFlusso2DB - Errore durante la creazione della DataRow letture per il POD" + pod.Pod + ex.Message);
+                }
+            }
+
+            try
+            {
+
+                DataRow drFile = FileXml.NewRow();
+                drFile["DataIns"] = DateTime.Now;
+                drFile["NomeFile"] = fileName;
+                drFile["FileXml"] = "";
+                drFile["Valido"] = true;
+
+                FileXml.Rows.Add(drFile);
+            }
+            catch (Exception ex)
+            {
+                //HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow FileXml per il file {fileName}: {ex.Message}", connessione);
+                log.Error("EE.SaveFlusso2F - Errore durante la creazione della DataRow FileXml per il file" + fileName + ex.Message);
+                
+
+            }
+
+            FileLavorato(FolderLavoro, fileName, connessione, log);
+
+            //Scrittura col Bulk
+            Bulk2DB(dtLetture, "HubLetture.dbo.LettureSF", connessione, log);
+            Bulk2DB(FileXml, "HubLetture.dbo.FileXmlEE", connessione, log);
+
+        }
+        public static void SaveFlusso2DB(Models.FlussoS.FlussoMisure FlussoS, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName, ILog log)
+        {
+            if (FlussoS == null || FlussoS.DatiPod == null || FlussoS.DatiPod.Length == 0)
+                return;
+            string[] arrName = fileName.Split('_');
+            string timeStamp = arrName[4];
+
+            //PREPARAZIONE DATATABLE
+            DataTable dtLetture = new DataTable();
+            dtLetture.Columns.Add("Id", typeof(int));
+            dtLetture.Columns.Add("CodFlusso", typeof(string));
+            dtLetture.Columns.Add("PIvaUtente", typeof(string));
+            dtLetture.Columns.Add("PIvaDistributore", typeof(string));
+            dtLetture.Columns.Add("Pod", typeof(string));
+            dtLetture.Columns.Add("CodContrDisp", typeof(string));
+            dtLetture.Columns.Add("CodPratAtt", typeof(string));
+            dtLetture.Columns.Add("MeseAnno", typeof(DateTime));
+            dtLetture.Columns.Add("PuntoDispacciamento", typeof(string));
+            dtLetture.Columns.Add("MessaRegime", typeof(string));
+            dtLetture.Columns.Add("DataMessaRegime", typeof(DateTime));
+            dtLetture.Columns.Add("Trattamento", typeof(string));
+            dtLetture.Columns.Add("Tensione", typeof(int));
+            dtLetture.Columns.Add("TipoMisuratore", typeof(string));
+            dtLetture.Columns.Add("TipoDato", typeof(string));
+            dtLetture.Columns.Add("PotMax", typeof(decimal));
+            dtLetture.Columns.Add("PotImp", typeof(decimal));
+            dtLetture.Columns.Add("PotDisp", typeof(decimal));
+            dtLetture.Columns.Add("Ka", typeof(decimal));
+            dtLetture.Columns.Add("Kr", typeof(decimal));
+            dtLetture.Columns.Add("Kp", typeof(decimal));
+            dtLetture.Columns.Add("Ea", typeof(decimal));
+            dtLetture.Columns.Add("EaF1", typeof(decimal));
+            dtLetture.Columns.Add("EaF2", typeof(decimal));
+            dtLetture.Columns.Add("EaF3", typeof(decimal));
+            dtLetture.Columns.Add("EaF4", typeof(decimal));
+            dtLetture.Columns.Add("EaF5", typeof(decimal));
+            dtLetture.Columns.Add("EaF6", typeof(decimal));
+            dtLetture.Columns.Add("EaM", typeof(decimal));
+            dtLetture.Columns.Add("PotF1", typeof(decimal));
+            dtLetture.Columns.Add("PotF2", typeof(decimal));
+            dtLetture.Columns.Add("PotF3", typeof(decimal));
+            dtLetture.Columns.Add("PotF4", typeof(decimal));
+            dtLetture.Columns.Add("PotF5", typeof(decimal));
+            dtLetture.Columns.Add("PotF6", typeof(decimal));
+            dtLetture.Columns.Add("PotM", typeof(decimal));
+            dtLetture.Columns.Add("EaF1Std", typeof(decimal));
+            dtLetture.Columns.Add("EaF2Std", typeof(decimal));
+            dtLetture.Columns.Add("EaF3Std", typeof(decimal));
+            dtLetture.Columns.Add("MatrAtt", typeof(string));
+            dtLetture.Columns.Add("MatrRea", typeof(string));
+            dtLetture.Columns.Add("MatrPot", typeof(string));
+            dtLetture.Columns.Add("DataInstMisAtt", typeof(DateTime));
+            dtLetture.Columns.Add("DataInstMisRea", typeof(DateTime));
+            dtLetture.Columns.Add("DataInstMisPot", typeof(DateTime));
+            dtLetture.Columns.Add("CifreAtt", typeof(int));
+            dtLetture.Columns.Add("CifreRea", typeof(int));
+            dtLetture.Columns.Add("CifrePot", typeof(int));
+            dtLetture.Columns.Add("GruppoMis", typeof(string));
+            dtLetture.Columns.Add("Forfait", typeof(string));
+            dtLetture.Columns.Add("CodiceTariffa", typeof(string));
+            dtLetture.Columns.Add("Residena", typeof(string));
+            dtLetture.Columns.Add("Disalimentabilità", typeof(string));
+            dtLetture.Columns.Add("ServizioTutela", typeof(string));
+            dtLetture.Columns.Add("RegimeCompesazione", typeof(string));
+            dtLetture.Columns.Add("ConfigurazioneMisuratore", typeof(string));
+            dtLetture.Columns.Add("IdFile", typeof(int));
+            dtLetture.Columns.Add("TimeStamp", typeof(string));
+            dtLetture.Columns.Add("Valido", typeof(bool));
+            dtLetture.PrimaryKey = new DataColumn[] { dtLetture.Columns["Id"] };
+
+            //PRELIEVO ULTIMO ID LETTURA
+            int IdLettura = 0;
+            string queryId = @"SELECT IDENT_CURRENT('HubLetture.dbo.LettureSF') AS IdLettura";
+
+            using (SqlCommand cmd = new SqlCommand(queryId, connessione))
+            {
+                object result = cmd.ExecuteScalar();
+                IdLettura = Convert.ToInt32(result);
+            }
+            //Quartini
+            DataTable QE;
+            QE = new DataTable();
+            QE.Columns.Add("Id", typeof(int)).AutoIncrement = true;
+            QE.Columns.Add("IdLetture", typeof(int));
+            QE.Columns.Add("IdFile", typeof(int));
+            QE.Columns.Add("Giorno", typeof(int));
+            QE.Columns.Add("Tipo", typeof(string)).MaxLength = 105;
+            for (int i = 1; i <= 100; i++)
+            {
+                DataColumn col = new DataColumn($"E{i}", typeof(decimal))
+                {
+                    DefaultValue = 0m,
+                    AllowDBNull = false
+                };
+
+                QE.Columns.Add(col);
+            }
+            QE.PrimaryKey = new DataColumn[] { QE.Columns["Id"] };
+
+            //scrittura per Tabella FileXml
+            DataTable FileXml = new DataTable();
+            FileXml.Columns.Add("IdFile", typeof(int)).AutoIncrement = true;
+            FileXml.Columns.Add("DataIns", typeof(DateTime));
+            FileXml.Columns.Add("NomeFile", typeof(string)).MaxLength = 250;
+            FileXml.Columns.Add("FileXml", typeof(string));
+            FileXml.Columns.Add("Valido", typeof(bool));
+
+            FileXml.PrimaryKey = new DataColumn[] { FileXml.Columns["Id"] };
+
+            
+            var datiPod = FlussoS.DatiPod;
+            string codFlusso = FlussoS.CodFlusso.ToString();
+
+            foreach (var dp in datiPod)
+            {
+                if (dp?.Consumo?.Ea != null)
+                {
+                    MappaQuartini(QE, IdFile, IdLettura, "Ea", dp.Consumo.Ea);
+                }
+            }
+
+            for (int j = 0; j < FlussoS.DatiPod.Length; j++)
+            {
+                Models.FlussoS.FlussoMisureDatiPod pod = FlussoS.DatiPod[j];
+                IdLettura++;
+               
+                try
+                {
+
+                    DataRow dr = dtLetture.NewRow();
+                    Object nullo = DBNull.Value;
+
+                    dr["Id"] = IdLettura;
+                    dr["CodFlusso"] = FlussoS.CodFlusso;
+                    dr["PIvaUtente"] = FlussoS.IdentificativiFlusso.PIvaUtente;
+                    dr["PIvaDistributore"] = FlussoS.IdentificativiFlusso.PIvaDistributore;
+                    dr["Pod"] = pod.Pod;
+                    dr["MeseAnno"] = pod.MeseAnno;
+                    dr["CodContrDisp"] = FlussoS.IdentificativiFlusso.CodContrDisp;
+
+                    dr["MessaRegime"] = (Object)pod.DatiPdp.MessaRegime ?? DBNull.Value; 
+                    dr["Trattamento"] = pod.DatiPdp.Trattamento;
+                    dr["TipoMisuratore"] = pod.DatiPdp.TipoMisuratore;
+                    dr["TipoDato"] = pod.Consumo.TipoDato;
+                    dr["PotMax"] = (pod.Consumo.PotMax is null || pod.Consumo.PotMax == string.Empty) ? nullo : pod.Consumo.PotMax;
+                    
+                    dr["EaF1"] = (pod.Consumo.EaF1 is null || pod.Consumo.EaF1 == string.Empty) ? nullo : pod.Consumo.EaF1;
+                    dr["EaF2"] = (pod.Consumo.EaF2 is null || pod.Consumo.EaF2 == string.Empty) ? nullo : pod.Consumo.EaF2;
+                    dr["EaF3"] = (pod.Consumo.EaF3 is null || pod.Consumo.EaF3 == string.Empty) ? nullo : pod.Consumo.EaF3;
+                    dr["EaF4"] = (pod.Consumo.EaF4 is null || pod.Consumo.EaF4 == string.Empty) ? nullo : pod.Consumo.EaF4;
+                    dr["EaF5"] = (pod.Consumo.EaF5 is null || pod.Consumo.EaF5 == string.Empty) ? nullo : pod.Consumo.EaF5;
+                    dr["EaF6"] = (pod.Consumo.EaF6 is null || pod.Consumo.EaF6 == string.Empty) ? nullo : pod.Consumo.EaF6;
+                    dr["EaM"] = (pod.Consumo.EaM is null || pod.Consumo.EaF1 == string.Empty) ? nullo : pod.Consumo.EaF1;
+                    dr["PotF1"] = (pod.Consumo.PotF1 is null || pod.Consumo.PotF1 == string.Empty) ? nullo : pod.Consumo.PotF1;
+                    dr["PotF2"] = (pod.Consumo.PotF2 is null || pod.Consumo.PotF2 == string.Empty) ? nullo : pod.Consumo.PotF2;
+                    dr["PotF3"] = (pod.Consumo.PotF3 is null || pod.Consumo.PotF3 == string.Empty) ? nullo : pod.Consumo.PotF3;
+                    dr["PotF4"] = (pod.Consumo.PotF4 is null || pod.Consumo.PotF4 == string.Empty) ? nullo : pod.Consumo.PotF4;
+                    dr["PotF5"] = (pod.Consumo.PotF5 is null || pod.Consumo.PotF5 == string.Empty) ? nullo : pod.Consumo.PotF5;
+                    dr["PotF6"] = (pod.Consumo.PotF6 is null || pod.Consumo.PotF6 == string.Empty) ? nullo : pod.Consumo.PotF6;
+                    dr["PotM"] =  (pod.Consumo.PotM is null || pod.Consumo.PotM == string.Empty) ? nullo : pod.Consumo.PotM;
+                    dr["EaF1Std"] = (pod.Consumo_StD?.EaF1_StD is null || pod.Consumo_StD?.EaF1_StD == string.Empty) ? nullo : pod.Consumo_StD?.EaF1_StD;
+                    dr["EaF2Std"] = (pod.Consumo_StD?.EaF2_StD is null || pod.Consumo_StD?.EaF2_StD == string.Empty) ? nullo : pod.Consumo_StD?.EaF2_StD;
+                    dr["EaF3Std"] = (pod.Consumo_StD?.EaF3_StD is null || pod.Consumo_StD?.EaF3_StD == string.Empty) ? nullo : pod.Consumo_StD?.EaF3_StD;
+
+                    dr["IdFile"] = IdFile;
+                    dr["TimeStamp"] = timeStamp;
+                    dr["Valido"] = true;
+
+                    dtLetture.Rows.Add(dr);
+            }
+                catch (Exception ex)
+                {
+                log.Error("EE.SaveFlusso2DB - Errore durante la creazione della DataRow letture per il POD" + pod.Pod + ex.Message);
+            }
+        }
+            try
+            {
+                DataRow drFile = FileXml.NewRow();
+                drFile["DataIns"] = DateTime.Now;
+                drFile["NomeFile"] = fileName;
+                drFile["FileXml"] = "";
+                drFile["Valido"] = true;
+
+                FileXml.Rows.Add(drFile);
+            }
+            catch (Exception ex)
+            {
+                //HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow FileXml per il file {fileName}: {ex.Message}", connessione);
+                log.Error("EE.SaveFlusso2F - Errore durante la creazione della DataRow FileXmlSF per il file" + fileName + ex.Message);
+
+            }
+
+            //Scrittura col Bulk
+            Bulk2DB(dtLetture, "HubLetture.dbo.LettureSF", connessione, log);
+            Bulk2DB(QE, "HubLetture.dbo.CurveS", connessione, log);
+            Bulk2DB(FileXml, "HubLetture.dbo.FileXmlEE", connessione, log);
+
+            FileLavorato(FolderLavoro, fileName, connessione, log);
         }
 
         // Metodo per mappare i quartini in QE, con gestione dinamica delle proprietà e parsing dei valori
@@ -932,6 +1314,7 @@ namespace Vendita.HubMisureEE.Services
             }
         }
 
+        
         // Metodo generico per scrivere DataTable in DB con SqlBulkCopy
         public static void Bulk2DB(DataTable dtLetture, string nomeTabella, SqlConnection connessione, ILog log)
         {
@@ -956,7 +1339,7 @@ namespace Vendita.HubMisureEE.Services
             catch (Exception ex)
             {
                 //HubLog.SaveLog2DB("INFO", $"Bulk tab:{nomeTabella}", ex.Message, connessione);
-                log.Error("Bulk tab" + nomeTabella + " " + ex.Message);
+                log.Error("EE.Bulk tab " + nomeTabella + " " + ex.Message);
 
             }
 
@@ -1025,7 +1408,7 @@ namespace Vendita.HubMisureEE.Services
         {
             File.Delete(Path.Combine(folderLavoro, namefile));
             //HubLog.SaveLog2DB("INFO", "SaveFlussoEE",$"File Valido: {namefile}", connessione);
-            log.Error("SaveFlussoEE - File Valido:" + namefile);
+            log.Info("EE.SaveFlusso-FileLavorato - File Valido:" + namefile);
 
         }
         public static string GetXmlEnumValue(MotivazioneType value)
