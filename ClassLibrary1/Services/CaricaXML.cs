@@ -16,22 +16,6 @@ namespace Vendita.HubMisureEE.Services
     public class CaricaXML
     {
 
-        private static bool IsRettifica(string fileName)
-        {
-
-            string[] sigleRettifica =
-            {
-                "RFO2G", "RNO2G", "RIN2G", "RNV2G", "RSN2G",
-                "SMR2G", "RTR2G", "DSR2G", "AVR2G", "VPR2G",
-                "RFO", "RNO", "RIN", "RNV", "RSN",
-                "SMR", "RTR", "DSR", "AVR", "VPR", "INTR"
-            };
-
-            return sigleRettifica.Any(s => fileName.Contains(s));
-
-        }
-
-
         public static void LoadXml(XmlDocument Doc, string connectionString, string FolderLavoro, int IdFile, ILog log)
         {
             if (Doc == null)
@@ -78,31 +62,34 @@ namespace Vendita.HubMisureEE.Services
                         log.Error("EE.CaricaXML.LoadXml(UnknownError)" + ex.Message);
                     }
 
-                    bool isSmis = IsSmis(fileName);
-                    bool isRettifica = IsRettifica(fileName);
-                    bool isPeriodica = IsPeriodico(fileName);
-                    bool isFlussoS = IsFlussoS(fileName);
-                    bool isFlussoF = IsFlussoF(fileName);
+                    string[] arName = fileName.Split('_');
+                    string tipoPrat = arName[3];
+
+                    bool isSmis = IsSmis(tipoPrat);
+                    bool isRettifica = IsRettifica(tipoPrat);
+                    bool isPeriodica = IsPeriodico(tipoPrat);
+                    bool isFlussoS = IsFlussoS(tipoPrat);
+                    bool isFlussoF = IsFlussoF(tipoPrat);
 
                     Type tipoDaUsare = null;
 
-                    if (IsSmis(fileName))
+                    if (isSmis)
                     {
                         tipoDaUsare = typeof(Models.Smis.FlussoMisure);
                     }
-                    else if (IsRettifica(fileName))
+                    else if (isRettifica)
                     {
                         tipoDaUsare = typeof(Models.Rettifica.FlussoMisure);
                     }
-                    else if (IsPeriodico(fileName))
+                    else if (isPeriodica)
                     {
                         tipoDaUsare = typeof(Models.Periodico.FlussoMisure);
                     }
-                    else if (IsFlussoS(fileName))
+                    else if (isFlussoS)
                     {
                         tipoDaUsare = typeof(Models.FlussoS.FlussoMisure);
                     }
-                    else if (IsFlussoF(fileName))
+                    else if (isFlussoF)
                     {
                         tipoDaUsare = typeof(Models.FlussoF.FlussoMisure);
                     }
@@ -176,26 +163,43 @@ namespace Vendita.HubMisureEE.Services
             }
         }
 
-        private static bool IsPeriodico(string filename)
+        private static bool IsPeriodico(string codFlusso)
         {
             string[] siglePeriodico = { "PDO", "PDO2G", "PNO", "PNO2G", "VNO", "VNO2G", "SNM", "SNM2G", "EIN",
                 "EIN2G", "SM", "SM2G", "RT", "RT2G", "DS", "DS2G", "AV", "AV2G", "VP", "VP2G", "INT" };
-            return siglePeriodico.Any(s => filename.Contains(s));
+  
+            return siglePeriodico.Contains(codFlusso);
+                
+
         }
-        private static bool IsSmis(string filename)
+        private static bool IsRettifica(string codFlusso)
+        {
+
+            string[] sigleRettifica =
+            {
+                "RFO2G", "RNO2G", "RIN2G", "RNV2G", "RSN2G",
+                "SMR2G", "RTR2G", "DSR2G", "AVR2G", "VPR2G",
+                "RFO", "RNO", "RIN", "RNV", "RSN",
+                "SMR", "RTR", "DSR", "AVR", "VPR", "INTR"
+            };
+
+            return sigleRettifica.Contains(codFlusso); ;
+
+        }
+        private static bool IsSmis(string codFlusso)
         {
             string[] sigleSmis = { "SMIS" };
-            return sigleSmis.Any(s => filename.Contains(s));
+            return sigleSmis.Contains(codFlusso);
         }
-        private static bool IsFlussoS(string filename)
+        private static bool IsFlussoS(string codFlusso)
         {
             string[] singleFlussoS = { "SOS", "S2G", "SNS" };
-            return singleFlussoS.Any(s => filename.Contains(s));
+            return singleFlussoS.Contains(codFlusso);
         }
-        private static bool IsFlussoF(string filename)
+        private static bool IsFlussoF(string codFlusso)
         {
             string[] singleFlussoF = { "SOF", "SNF", "F2G" };
-            return singleFlussoF.Any(s => filename.Contains(s));
+            return singleFlussoF.Contains(codFlusso);
         }
     }
 

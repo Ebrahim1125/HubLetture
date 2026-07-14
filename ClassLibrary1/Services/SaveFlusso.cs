@@ -827,7 +827,7 @@ namespace Vendita.HubMisureEE.Services
                 dr["PIvaDistributore"] = FlussoSmis.IdentificativiFlusso.PIvaDistributore;
                 dr["CodContrDisp"] = FlussoSmis.IdentificativiFlusso.CodContrDisp;
                 dr["Pod"] = pod.Pod;
-                dr["Motivazione"] = GetXmlEnumValue(pod.Motivazione);
+                dr["Motivazione"] = pod.Motivazione;
                 dr["TipologiaMisuratoreSmontaggio"] = pod.Smontaggio.TipoMisuratore.ToString();
                 dr["DataMisuraSmontaggio"] = pod.Smontaggio.DataMisura;
                 dr["SmontaggioTipoDato"] = pod.Smontaggio.TipoDato;
@@ -917,6 +917,7 @@ namespace Vendita.HubMisureEE.Services
             dtLetture.Columns.Add("PIvaUtente", typeof(string));
             dtLetture.Columns.Add("PIvaDistributore", typeof(string));
             dtLetture.Columns.Add("Pod", typeof(string));
+            dtLetture.Columns.Add("MeseAnno", typeof(DateTime));
             dtLetture.Columns.Add("CodContrDisp", typeof(string));
             dtLetture.Columns.Add("CodPratAtt", typeof(string));
             dtLetture.Columns.Add("DataInizio", typeof(DateTime));
@@ -933,7 +934,6 @@ namespace Vendita.HubMisureEE.Services
             dtLetture.Columns.Add("Ka", typeof(decimal));
             dtLetture.Columns.Add("Kr", typeof(decimal));
             dtLetture.Columns.Add("Kp", typeof(decimal));
-            dtLetture.Columns.Add("ErF1", typeof(decimal));
             dtLetture.Columns.Add("EaF1", typeof(decimal));
             dtLetture.Columns.Add("EaF2",typeof(decimal));
             dtLetture.Columns.Add("EaF3",typeof(decimal));
@@ -1007,43 +1007,43 @@ namespace Vendita.HubMisureEE.Services
                     //dr["PotM"] = pod.Consumo.PotM ?? (Object)DBNull.Value;
                     //dr["EaF1Std"] = (Object)pod.Consumo_StD?.EaF1_StD ?? DBNull.Value;
 
+                    Object nullo = DBNull.Value;
+
                     dr["Id"] = IdLettura;
                     dr["CodFlusso"] = FlussoMisura.CodFlusso;
-                    dr["PIvaUtente"] = FlussoMisura.IdentificativiFlusso.PIvaUtente ?? (Object)DBNull.Value;
-                    dr["PIvaDistributore"] = FlussoMisura.IdentificativiFlusso.PIvaDistributore ?? (Object)DBNull.Value; 
-                    dr["Pod"] = pod.Pod ?? (Object)DBNull.Value;
-                    dr["CodContrDisp"] = FlussoMisura.IdentificativiFlusso.CodContrDisp ?? (Object)DBNull.Value;
+                    dr["PIvaUtente"] = FlussoMisura.IdentificativiFlusso.PIvaUtente;
+                    dr["PIvaDistributore"] = FlussoMisura.IdentificativiFlusso.PIvaDistributore; 
+                    dr["Pod"] = pod.Pod;
+                    dr["CodContrDisp"] = FlussoMisura.IdentificativiFlusso.CodContrDisp ?? (Object)DBNull.Value; 
                     dr["CodPratAtt"] = pod.CodPrat_SII ?? (Object)DBNull.Value;
-                    dr["DataInizio"] = pod.DataInizio;
-                    dr["PuntoDispacciamento"] = pod.DatiPdp.PuntoDispacciamento;
-                    //dr["MessaRegime"] = pod.DatiPdp.DataMessaRegime2G ?? (Object)DBNull.Value;
-                    dr["DataMessaRegime"] = pod.DatiPdp.DataMessaRegime2G ?? (Object)DBNull.Value;
-                    dr["Trattamento"] = pod.DatiPdp.Trattamento ;
-                    dr["Tensione"] = pod.DatiPdp.Tensione ?? (Object)DBNull.Value;
-                    dr["TipoMisuratore"] = pod.DatiPdp.TipoMisuratore ;
-                    dr["PotImp"] = pod.DatiPdp.PotImp ?? (Object)DBNull.Value;
-                    dr["PotDisp"] = pod.DatiPdp.PotDisp ?? (Object)DBNull.Value;
-                    dr["Ka"] = pod.DatiPdp.Ka ?? (Object)DBNull.Value;
-                    dr["Kr"] = pod.DatiPdp.Kr ?? (Object)DBNull.Value;
-                    dr["Kp"] = pod.DatiPdp.Kp ?? (Object)DBNull.Value;
-                    dr["MatrAtt"] = pod.DatiPdp.MatrAtt?? (Object)DBNull.Value;
-                    dr["MatrRea"] = pod.DatiPdp.MatrRea?? (Object)DBNull.Value;
-                    dr["MatrPot"] = pod.DatiPdp.MatrPot ?? (Object)DBNull.Value;
-                    dr["DataInstMisAtt"] = pod.DatiPdp.DataInstMisAtt;
-                    dr["DataInstMisRea"] = pod.DatiPdp.DataInstMisRea;
-                    dr["DataInstMisPot"] = pod.DatiPdp.DataInstMisPot;
-                    dr["CifreAtt"] = pod.DatiPdp.CifreAtt?? (Object)DBNull.Value;
-                    dr["CifreRea"] = pod.DatiPdp.CifrePot?? (Object)DBNull.Value;
-                    dr["CifrePot"] = pod.DatiPdp.CifrePot ?? (Object)DBNull.Value;
+                    dr["DataInizio"] = pod.DataInizio ?? (Object)DBNull.Value; 
+                    dr["PuntoDispacciamento"] = (Object)pod.DatiPdp.PuntoDispacciamento ?? DBNull.Value;
+                    dr["DataMessaRegime"] = (pod.DatiPdp.DataMessaRegime2G is null || pod.DatiPdp.DataMessaRegime2G == string.Empty) ? nullo : pod.DatiPdp.DataMessaRegime2G;
+                    dr["Trattamento"] = (Object)pod.DatiPdp.Trattamento ?? DBNull.Value;
+                    dr["Tensione"] = (pod.DatiPdp.Tensione is null || pod.DatiPdp.Tensione == string.Empty) ? nullo : pod.DatiPdp.Tensione;
+                    dr["TipoMisuratore"] = (Object)pod.DatiPdp.TipoMisuratore ?? DBNull.Value; 
+                    dr["PotImp"] = (pod.DatiPdp.PotImp is null || pod.DatiPdp.PotImp == string.Empty) ? nullo : pod.DatiPdp.PotImp;
+                    dr["PotDisp"] = (pod.DatiPdp.PotDisp is null || pod.DatiPdp.PotDisp == string.Empty) ? nullo : pod.DatiPdp.PotDisp;
+                    dr["Ka"] = (pod.DatiPdp.Ka is null || pod.DatiPdp.Ka == string.Empty) ? nullo : pod.DatiPdp.Ka;
+                    dr["Kr"] =(pod.DatiPdp.Kr is null || pod.DatiPdp.Kr == string.Empty) ? nullo : pod.DatiPdp.Kr;
+                    dr["Kp"] = (pod.DatiPdp.Kp is null || pod.DatiPdp.Kp == string.Empty) ? nullo : pod.DatiPdp.Kp;
+                    dr["MatrAtt"] = (pod.DatiPdp.MatrAtt is null || pod.DatiPdp.MatrAtt == string.Empty) ? nullo : pod.DatiPdp.MatrAtt; 
+                    dr["MatrRea"] = (pod.DatiPdp.MatrRea is null || pod.DatiPdp.MatrRea == string.Empty) ? nullo : pod.DatiPdp.MatrRea;
+                    dr["MatrPot"] = (pod.DatiPdp.MatrPot is null || pod.DatiPdp.MatrPot == string.Empty) ? nullo : pod.DatiPdp.MatrPot;
+                    dr["DataInstMisAtt"] = (pod.DatiPdp.DataInstMisAtt is null || pod.DatiPdp.DataInstMisAtt == string.Empty) ? nullo : pod.DatiPdp.DataInstMisAtt; 
+                    dr["DataInstMisRea"] = (pod.DatiPdp.DataInstMisRea is null || pod.DatiPdp.DataInstMisRea == string.Empty) ? nullo : pod.DatiPdp.DataInstMisRea;
+                    dr["DataInstMisPot"] = (pod.DatiPdp.DataInstMisPot is null || pod.DatiPdp.DataInstMisPot == string.Empty) ? nullo : pod.DatiPdp.DataInstMisPot;
+                    dr["CifreAtt"] = (pod.DatiPdp.CifreAtt is null || pod.DatiPdp.CifreAtt == string.Empty) ? nullo : pod.DatiPdp.CifreAtt;
+                    dr["CifreRea"] = (pod.DatiPdp.CifrePot is null || pod.DatiPdp.CifrePot == string.Empty) ? nullo : pod.DatiPdp.CifrePot;
+                    dr["CifrePot"] = (pod.DatiPdp.CifrePot is null || pod.DatiPdp.CifrePot == string.Empty) ? nullo : pod.DatiPdp.CifrePot;
                     dr["GruppoMis"] = pod.DatiPdp.GruppoMis;
-                    dr["Forfait"] = pod.DatiPdp.Forfait;
-                    dr["CodiceTariffa"] = pod.DatiPdp.CodiceTariffa ?? (Object)DBNull.Value; 
+                    dr["Forfait"] = pod.DatiPdp.Forfait ;
+                    dr["CodiceTariffa"] = (pod.DatiPdp.CodiceTariffa is null || pod.DatiPdp.CodiceTariffa == string.Empty) ? nullo : pod.DatiPdp.CodiceTariffa;
                     dr["Residena"] = pod.DatiPdp.Residenza;
-                    dr["Disalimentabilità"] = pod.DatiPdp.Disaliment ;
+                    dr["Disalimentabilità"] = pod.DatiPdp.GruppoMis;
                     dr["ServizioTutela"] = pod.DatiPdp.ServizioTutela;
-                    dr["RegimeCompesazione"] = pod.DatiPdp.RegimeComp ?? (Object)DBNull.Value;
-                    dr["ConfigurazioneMisuratore"] = pod.DatiPdp.ConfMis ;
-                    dr["IdFile"] = IdFile;
+                    dr["RegimeCompesazione"] = pod.DatiPdp.RegimeComp;
+                    dr["ConfigurazioneMisuratore"] = pod.DatiPdp.ConfMis;
                     dr["TimeStamp"] = timeStamp;
                     dr["Valido"] = true;
 
@@ -1070,6 +1070,7 @@ namespace Vendita.HubMisureEE.Services
             {
                 //HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow FileXml per il file {fileName}: {ex.Message}", connessione);
                 log.Error("EE.SaveFlusso2F - Errore durante la creazione della DataRow FileXml per il file" + fileName + ex.Message);
+                
 
             }
 
@@ -1096,7 +1097,7 @@ namespace Vendita.HubMisureEE.Services
             dtLetture.Columns.Add("Pod", typeof(string));
             dtLetture.Columns.Add("CodContrDisp", typeof(string));
             dtLetture.Columns.Add("CodPratAtt", typeof(string));
-            dtLetture.Columns.Add("DataInizio", typeof(DateTime));
+            dtLetture.Columns.Add("MeseAnno", typeof(DateTime));
             dtLetture.Columns.Add("PuntoDispacciamento", typeof(string));
             dtLetture.Columns.Add("MessaRegime", typeof(string));
             dtLetture.Columns.Add("DataMessaRegime", typeof(DateTime));
@@ -1110,7 +1111,7 @@ namespace Vendita.HubMisureEE.Services
             dtLetture.Columns.Add("Ka", typeof(decimal));
             dtLetture.Columns.Add("Kr", typeof(decimal));
             dtLetture.Columns.Add("Kp", typeof(decimal));
-            dtLetture.Columns.Add("ErF1", typeof(decimal));
+            dtLetture.Columns.Add("Ea", typeof(decimal));
             dtLetture.Columns.Add("EaF1", typeof(decimal));
             dtLetture.Columns.Add("EaF2", typeof(decimal));
             dtLetture.Columns.Add("EaF3", typeof(decimal));
@@ -1210,38 +1211,39 @@ namespace Vendita.HubMisureEE.Services
                 {
 
                     DataRow dr = dtLetture.NewRow();
+                    Object nullo = DBNull.Value;
 
                     dr["Id"] = IdLettura;
                     dr["CodFlusso"] = FlussoS.CodFlusso;
                     dr["PIvaUtente"] = FlussoS.IdentificativiFlusso.PIvaUtente;
                     dr["PIvaDistributore"] = FlussoS.IdentificativiFlusso.PIvaDistributore;
                     dr["Pod"] = pod.Pod;
-                    //dr["MeseAnno"] = pod.MeseAnno;
+                    dr["MeseAnno"] = pod.MeseAnno;
                     dr["CodContrDisp"] = FlussoS.IdentificativiFlusso.CodContrDisp;
 
-                    dr["MessaRegime"] = pod.DatiPdp.MessaRegime;
+                    dr["MessaRegime"] = (Object)pod.DatiPdp.MessaRegime ?? DBNull.Value; 
                     dr["Trattamento"] = pod.DatiPdp.Trattamento;
                     dr["TipoMisuratore"] = pod.DatiPdp.TipoMisuratore;
                     dr["TipoDato"] = pod.Consumo.TipoDato;
-                    dr["PotMax"] = pod.Consumo.PotMax;
-
-                    dr["EaF1"] = pod.Consumo.EaF1;
-                    dr["EaF2"] = pod.Consumo.EaF2;
-                    dr["EaF3"] = pod.Consumo.EaF3;
-                    dr["EaF4"] = pod.Consumo.EaF4;
-                    dr["EaF5"] = pod.Consumo.EaF5;
-                    dr["EaF6"] = pod.Consumo.EaF6;
-                    dr["EaM"] = pod.Consumo.EaM ?? (Object)DBNull.Value;
-                    dr["PotF1"] = pod.Consumo.PotF1;
-                    dr["PotF2"] = pod.Consumo.PotF2;
-                    dr["PotF3"] = pod.Consumo.PotF3;
-                    dr["PotF4"] = pod.Consumo.PotF4;
-                    dr["PotF5"] = pod.Consumo.PotF5;
-                    dr["PotF6"] = pod.Consumo.PotF6;
-                    dr["PotM"] = pod.Consumo.PotM ?? (Object)DBNull.Value; 
-                    dr["EaF1Std"] = (Object)pod.Consumo_StD?.EaF1_StD ?? DBNull.Value; 
-                    dr["EaF2Std"] = (Object)pod.Consumo_StD?.EaF2_StD ?? DBNull.Value; 
-                    dr["EaF3Std"] = (Object)pod.Consumo_StD?.EaF3_StD ?? DBNull.Value; 
+                    dr["PotMax"] = (pod.Consumo.PotMax is null || pod.Consumo.PotMax == string.Empty) ? nullo : pod.Consumo.PotMax;
+                    
+                    dr["EaF1"] = (pod.Consumo.EaF1 is null || pod.Consumo.EaF1 == string.Empty) ? nullo : pod.Consumo.EaF1;
+                    dr["EaF2"] = (pod.Consumo.EaF2 is null || pod.Consumo.EaF2 == string.Empty) ? nullo : pod.Consumo.EaF2;
+                    dr["EaF3"] = (pod.Consumo.EaF3 is null || pod.Consumo.EaF3 == string.Empty) ? nullo : pod.Consumo.EaF3;
+                    dr["EaF4"] = (pod.Consumo.EaF4 is null || pod.Consumo.EaF4 == string.Empty) ? nullo : pod.Consumo.EaF4;
+                    dr["EaF5"] = (pod.Consumo.EaF5 is null || pod.Consumo.EaF5 == string.Empty) ? nullo : pod.Consumo.EaF5;
+                    dr["EaF6"] = (pod.Consumo.EaF6 is null || pod.Consumo.EaF6 == string.Empty) ? nullo : pod.Consumo.EaF6;
+                    dr["EaM"] = (pod.Consumo.EaM is null || pod.Consumo.EaF1 == string.Empty) ? nullo : pod.Consumo.EaF1;
+                    dr["PotF1"] = (pod.Consumo.PotF1 is null || pod.Consumo.PotF1 == string.Empty) ? nullo : pod.Consumo.PotF1;
+                    dr["PotF2"] = (pod.Consumo.PotF2 is null || pod.Consumo.PotF2 == string.Empty) ? nullo : pod.Consumo.PotF2;
+                    dr["PotF3"] = (pod.Consumo.PotF3 is null || pod.Consumo.PotF3 == string.Empty) ? nullo : pod.Consumo.PotF3;
+                    dr["PotF4"] = (pod.Consumo.PotF4 is null || pod.Consumo.PotF4 == string.Empty) ? nullo : pod.Consumo.PotF4;
+                    dr["PotF5"] = (pod.Consumo.PotF5 is null || pod.Consumo.PotF5 == string.Empty) ? nullo : pod.Consumo.PotF5;
+                    dr["PotF6"] = (pod.Consumo.PotF6 is null || pod.Consumo.PotF6 == string.Empty) ? nullo : pod.Consumo.PotF6;
+                    dr["PotM"] =  (pod.Consumo.PotM is null || pod.Consumo.PotM == string.Empty) ? nullo : pod.Consumo.PotM;
+                    dr["EaF1Std"] = (pod.Consumo_StD?.EaF1_StD is null || pod.Consumo_StD?.EaF1_StD == string.Empty) ? nullo : pod.Consumo_StD?.EaF1_StD;
+                    dr["EaF2Std"] = (pod.Consumo_StD?.EaF2_StD is null || pod.Consumo_StD?.EaF2_StD == string.Empty) ? nullo : pod.Consumo_StD?.EaF2_StD;
+                    dr["EaF3Std"] = (pod.Consumo_StD?.EaF3_StD is null || pod.Consumo_StD?.EaF3_StD == string.Empty) ? nullo : pod.Consumo_StD?.EaF3_StD;
 
                     dr["IdFile"] = IdFile;
                     dr["TimeStamp"] = timeStamp;
@@ -1267,7 +1269,7 @@ namespace Vendita.HubMisureEE.Services
             catch (Exception ex)
             {
                 //HubLog.SaveLog2DB("Error", "SaveFlusso2DB", $"Errore durante la creazione della DataRow FileXml per il file {fileName}: {ex.Message}", connessione);
-                log.Error("EE.SaveFlusso2F - Errore durante la creazione della DataRow FileXml per il file" + fileName + ex.Message);
+                log.Error("EE.SaveFlusso2F - Errore durante la creazione della DataRow FileXmlSF per il file" + fileName + ex.Message);
 
             }
 

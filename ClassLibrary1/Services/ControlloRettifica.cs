@@ -17,7 +17,8 @@ namespace Vendita.HubMisureEE.Services
             try
             {
                 string query = @"SELECT l.IdFile FROM HubLetture.dbo.LettureEE l
-                     LEFT JOIN HubLetture.dbo.CurveEE c ON l.Id = c.IdLetture WHERE l.PIvaUtente = @PIvaUtente
+                     LEFT JOIN HubLetture.dbo.CurveEE c ON l.Id = c.IdLetture 
+                     WHERE l.PIvaUtente = @PIvaUtente
                      AND l.PIvaDistributore = @PIvaDistributore
                      AND l.Pod = @Pod 
                      AND l.CodFlusso NOT LIKE 'SMIS'
@@ -40,9 +41,9 @@ namespace Vendita.HubMisureEE.Services
                 if (IdFileXml != 0)
                 {
                     Rettifica("HubLetture.dbo.LettureEE", IdFileXml, connessione, log);
-                    Rettifica("HubLetture.dbo.FileXml", IdFileXml, connessione, log);
+                    Rettifica("HubLetture.dbo.FileXmlEE", IdFileXml, connessione, log);
                     Rettifica("HubLetture.dbo.CurveEE", IdFileXml, connessione, log);
-                    log.Info("EE.ControllaRettifica.IsRettificato--Trovato file da rettificare--");
+                    log.Info("EE.ControllaRettifica.IsRettificato -- Trovato file da rettificare");
                     return true;
                 }
                 else
@@ -54,7 +55,7 @@ namespace Vendita.HubMisureEE.Services
             catch (Exception ex)
             {
                 //HubLog.SaveLog2DB("Error", "ControllaRettifica.IsRettificato(PeriodicoNonTrovato)", ex.Message, connessione);
-                log.Error("EE.ControllaRettifica.IsRettificato--Errore ricerca file da rettificare--" + ex.Message);
+                log.Error("EE.ControllaRettifica.IsRettificato -- Errore ricerca file da rettificare -- " + ex.Message);
 
                 return false;
             }
@@ -69,7 +70,7 @@ namespace Vendita.HubMisureEE.Services
                 using (SqlCommand com = new SqlCommand(query, connessione))
                 {
                     com.Parameters.Add("@IdFile", SqlDbType.Int).Value = Id;
-                    com.Parameters.Add("@Valdio", SqlDbType.Bit).Value = false;
+                    com.Parameters.Add("@Valido", SqlDbType.Bit).Value = false;
 
                     com.ExecuteNonQuery();
                 }
@@ -77,12 +78,12 @@ namespace Vendita.HubMisureEE.Services
             catch (SqlException ex)
             {
                 //HubLog.SaveLog2DB("Error", "ControllaRettifica.Rettifica", ex.Message, connessione);
-                log.Error($"EE.ControllaRettifica.Rettifica--Errore SQL nell'aggiornamento della validita per " + ex.Message);
+                log.Error($"EE.ControllaRettifica.Rettifica -- Errore SQL nell'aggiornamento della validita per " + ex.Message);
             }
             catch (Exception ex)
             {
                 //HubLog.SaveLog2DB("Error", "ControllaRettifica.Rettifica", ex.Message, connessione);
-                log.Error($"EE.ControllaRettifica.Rettifica--Errore nell'aggiornamento della validita" + ex.Message);
+                log.Error($"EE.ControllaRettifica.Rettifica -- Errore nell'aggiornamento della validita " + ex.Message);
             }
         }
     }
