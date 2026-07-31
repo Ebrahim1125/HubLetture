@@ -15,7 +15,7 @@ namespace Vendita.HubMisureEE.Services
         //La funzione restituisce una lista dei nomi dei file xml estratti o copiati.
         //Inoltre, la funzione controlla se i file xml rispettano un determinato formato di nome e se sono già presenti nel database prima di estrarli o copiarli.
         //In caso di errori durante l'estrazione o la copia dei file, viene registrato un log nel database.
-        public static List<string> UnloadZip(string inFile, string outFile, string stringConnect, out int IdFile, ILog log)
+        public static List<string> UnloadZip(string inFile, string outFile, string DBNameEString, out int IdFile, ILog log)
         {
             string[] zipFiles = null;
             string[] xmlFiles = null;
@@ -59,11 +59,12 @@ namespace Vendita.HubMisureEE.Services
             IdFile = 0;
             try
             {
-                using (SqlConnection conn = new SqlConnection(stringConnect))
+                string[] elementDB = DBNameEString.Split('<');
+                using (SqlConnection conn = new SqlConnection(elementDB[1]))
                 {
                     conn.Open();
                     //Caricamento dei nomi dei file xml già presenti nel database, con gestione degli errori.
-                    using (var FileXmlDb = new SqlDataAdapter("SELECT IdFile, NomeFile, Lavorato FROM HubLetture.dbo.FileXmlEE", conn))
+                    using (var FileXmlDb = new SqlDataAdapter($"SELECT IdFile, NomeFile, Lavorato FROM {elementDB[0]}.dbo.FileXmlEE", conn))
                     {
                         FileXmlDb.Fill(FileXml);
                         IdFile = FileXml.Rows.Count + 1;
@@ -73,7 +74,6 @@ namespace Vendita.HubMisureEE.Services
             }
             catch (SqlException ex)
             {
-                //HubLog.SaveLog2DB("Error", "ZipExtractorService/Query FileXml", ex.Message, stringConnect);
                 log.Error("EE.ZipExtractorService/Query FileXmlEE " + ex.Message);
             }
 
@@ -119,7 +119,6 @@ namespace Vendita.HubMisureEE.Services
                 }
                 catch (Exception ex)
                 {
-                    //HubLog.SaveLog2DB("Error", "ZipExtractorService.cs/Inserimento nomi nel flusso", ex.Message, stringConnect);
                     log.Error("EE.ZipExtractorService.cs/Errore inserimento nomi dei flussi " + ex.Message);
                 }
             }

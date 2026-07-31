@@ -8,7 +8,7 @@ namespace Vendita.HubMisureEE.Services
     // La classe ControllaRettifica contiene metodi per verificare se una lettura è stata rettificata e per aggiornare lo stato di rettifica nei database.
     internal class ControllaRettifica
     {
-        public static bool IsRettificato(SqlConnection connessione, string piVaUtente, string piVaDistributore, string Pod, object DataMisure, ILog log)
+        public static bool IsRettificato(string nomeDB, SqlConnection connessione, string piVaUtente, string piVaDistributore, string Pod, object DataMisure, ILog log)
         {
             int IdFileXml = 0;
 
@@ -16,8 +16,8 @@ namespace Vendita.HubMisureEE.Services
             // filtrando per i parametri specificati (PIvaUtente, PIvaDistributore, Pod, DataMisura)
             try
             {
-                string query = @"SELECT l.IdFile FROM HubLetture.dbo.LettureEE l
-                     LEFT JOIN HubLetture.dbo.CurveEE c ON l.Id = c.IdLetture 
+                string query = $@"SELECT l.IdFile FROM {nomeDB}.dbo.LettureEE l
+                     LEFT JOIN {nomeDB}.dbo.CurveEE c ON l.Id = c.IdLetture 
                      WHERE l.PIvaUtente = @PIvaUtente
                      AND l.PIvaDistributore = @PIvaDistributore
                      AND l.Pod = @Pod 
@@ -40,9 +40,9 @@ namespace Vendita.HubMisureEE.Services
                 }
                 if (IdFileXml != 0)
                 {
-                    Rettifica("HubLetture.dbo.LettureEE", IdFileXml, connessione, log);
-                    Rettifica("HubLetture.dbo.FileXmlEE", IdFileXml, connessione, log);
-                    Rettifica("HubLetture.dbo.CurveEE", IdFileXml, connessione, log);
+                    Rettifica($"{nomeDB}.dbo.LettureEE", IdFileXml, connessione, log);
+                    Rettifica($"{nomeDB}.dbo.FileXmlEE", IdFileXml, connessione, log);
+                    Rettifica($"{nomeDB}.dbo.CurveEE", IdFileXml, connessione, log);
                     log.Info("EE.ControllaRettifica.IsRettificato -- Trovato file da rettificare");
                     return true;
                 }

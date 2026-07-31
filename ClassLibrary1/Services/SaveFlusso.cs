@@ -19,7 +19,7 @@ namespace Vendita.HubMisureEE.Services
     internal class SaveFlusso
     {
         // Lavorazione del flusso Periodico e salvataggio su DB
-        public static void SaveFlusso2DB(Models.Periodico.FlussoMisure FlussoMisura, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName, ILog log)
+        public static void SaveFlusso2DB(Models.Periodico.FlussoMisure FlussoMisura, string nomeDB, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName, ILog log)
         {
             if (FlussoMisura == null || FlussoMisura.DatiPod == null || FlussoMisura.DatiPod.Length == 0)
                 return;
@@ -126,7 +126,7 @@ namespace Vendita.HubMisureEE.Services
 
             //PRELIEVO ULTIMO ID LETTURA
             int IdLettura = 0;
-            string queryId = @"SELECT IDENT_CURRENT('HubLetture.dbo.LettureEE') AS IdLettura";
+            string queryId = $@"SELECT IDENT_CURRENT('{nomeDB}.dbo.LettureEE') AS IdLettura";
 
             using (SqlCommand cmd = new SqlCommand(queryId, connessione))
             {
@@ -352,16 +352,16 @@ namespace Vendita.HubMisureEE.Services
 
 
             //Scrittura col bulk
-            Bulk2DB(QE, "HubLetture.dbo.CurveEE", connessione, log);
-            Bulk2DB(dtLetture, "HubLetture.dbo.LettureEE", connessione, log);
-            Bulk2DB(FileXml, "HubLetture.dbo.FileXmlEE", connessione, log);
+            Bulk2DB(QE, $"{nomeDB}.dbo.CurveEE",  connessione, log);
+            Bulk2DB(dtLetture, $"{nomeDB}.dbo.LettureEE",  connessione, log);
+            Bulk2DB(FileXml, $"{nomeDB}.dbo.FileXmlEE",  connessione, log);
 
 
-            FileLavorato(FolderLavoro, fileName, connessione, log);
+            FileLavorato(FolderLavoro, fileName,  log);
         }
 
         // Lavorazione del flusso Rettifico e salvataggio su DB
-        public static void SaveFlusso2DB(Models.Rettifica.FlussoMisure FlussoRettifica, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName, ILog log)
+        public static void SaveFlusso2DB(Models.Rettifica.FlussoMisure FlussoRettifica, string nomeDB, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName, ILog log)
         {
             if (FlussoRettifica == null || FlussoRettifica.DatiPod == null || FlussoRettifica.DatiPod.Length == 0)
                 return;
@@ -468,7 +468,7 @@ namespace Vendita.HubMisureEE.Services
             //PRELIEVO ULTIMO ID LETTURA
             int IdLettura = 0;
 
-            string queryId = @"SELECT IDENT_CURRENT('HubLetture.dbo.LettureEE') AS IdLettura";
+            string queryId = $@"SELECT IDENT_CURRENT('{nomeDB}.dbo.LettureEE') AS IdLettura";
 
             using (SqlCommand cmd = new SqlCommand(queryId, connessione))
             {
@@ -671,7 +671,7 @@ namespace Vendita.HubMisureEE.Services
                     MappaQuartini(QE, IdFile, IdLettura, "Eri", rfov2.Eri);
                 }
 
-                ControllaRettifica.IsRettificato(connessione, piVaUtente, piVaDistributore, nPod, DataMisure, log);
+                ControllaRettifica.IsRettificato(nomeDB,connessione, piVaUtente, piVaDistributore, nPod, DataMisure, log);
             }
 
             DataRow drFile = FileXml.NewRow();
@@ -683,15 +683,15 @@ namespace Vendita.HubMisureEE.Services
             FileXml.Rows.Add(drFile);
 
             //Scrittura col Bulk
-            Bulk2DB(dtLetture, "HubLetture.dbo.LettureEE", connessione, log);
-            Bulk2DB(QE, "HubLetture.dbo.CurveEE", connessione, log);
-            Bulk2DB(FileXml, "HubLetture.dbo.FileXmlEE", connessione, log);
+            Bulk2DB(dtLetture, $"{nomeDB}.dbo.LettureEE", connessione, log);
+            Bulk2DB(QE, $"{nomeDB}.dbo.CurveEE", connessione, log);
+            Bulk2DB(FileXml, $"{nomeDB}.dbo.FileXmlEE", connessione, log);
 
 
-            FileLavorato(FolderLavoro, fileName, connessione, log);
+            FileLavorato(FolderLavoro, fileName, log);
         }
 
-        public static void SaveFlusso2DB(Models.Smis.FlussoMisure FlussoSmis, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName, ILog log)
+        public static void SaveFlusso2DB(Models.Smis.FlussoMisure FlussoSmis, string nomeDB, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName, ILog log)
         {
             if (FlussoSmis == null || FlussoSmis.DatiPod == null || FlussoSmis.DatiPod.Length == 0)
                 return;
@@ -805,7 +805,7 @@ namespace Vendita.HubMisureEE.Services
             //PRELIEVO ULTIMO ID LETTURA
             int IdLettura = 0;
 
-            string queryId = @"SELECT IDENT_CURRENT('HubLetture.dbo.LettureSmisEE') AS IdLettura";
+            string queryId = $@"SELECT IDENT_CURRENT('{nomeDB}.dbo.LettureSmisEE') AS IdLettura";
 
             using (SqlCommand cmd = new SqlCommand(queryId, connessione))
             {
@@ -893,15 +893,15 @@ namespace Vendita.HubMisureEE.Services
 
             FileXml.Rows.Add(drFile);
 
-            FileLavorato(FolderLavoro, fileName, connessione, log);
+            FileLavorato(FolderLavoro, fileName, log);
 
             //Scrittura col Bulk
-            Bulk2DB(dtLetture, "HubLetture.dbo.LettureSmisEE", connessione, log);
-            Bulk2DB(FileXml, "HubLetture.dbo.FileXmlEE", connessione, log);
+            Bulk2DB(dtLetture, $"{nomeDB}.dbo.LettureSmisEE", connessione, log);
+            Bulk2DB(FileXml, $"{nomeDB}.dbo.FileXmlEE", connessione, log);
 
         }
 
-        public static void SaveFlusso2DB(Models.FlussoF.FlussoMisure FlussoMisura, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName, ILog log)
+        public static void SaveFlusso2DB(Models.FlussoF.FlussoMisure FlussoMisura, string nomeDB, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName, ILog log)
         {
             if (FlussoMisura == null || FlussoMisura.DatiPod == null || FlussoMisura.DatiPod.Length == 0)
                 return;
@@ -986,7 +986,7 @@ namespace Vendita.HubMisureEE.Services
 
             //PRELIEVO ULTIMO ID LETTURA
             int IdLettura = 0;
-            string queryId = @"SELECT IDENT_CURRENT('HubLetture.dbo.LettureSF') AS IdLettura";
+            string queryId = $@"SELECT IDENT_CURRENT('{nomeDB}.dbo.LettureSF') AS IdLettura";
 
             using (SqlCommand cmd = new SqlCommand(queryId, connessione))
             {
@@ -1074,14 +1074,14 @@ namespace Vendita.HubMisureEE.Services
 
             }
 
-            FileLavorato(FolderLavoro, fileName, connessione, log);
+            FileLavorato(FolderLavoro, fileName, log);
 
             //Scrittura col Bulk
-            Bulk2DB(dtLetture, "HubLetture.dbo.LettureSF", connessione, log);
-            Bulk2DB(FileXml, "HubLetture.dbo.FileXmlEE", connessione, log);
+            Bulk2DB(dtLetture, $"{nomeDB}.dbo.LettureSF", connessione, log);
+            Bulk2DB(FileXml, $"{nomeDB}.dbo.FileXmlEE", connessione, log);
 
         }
-        public static void SaveFlusso2DB(Models.FlussoS.FlussoMisure FlussoS, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName, ILog log)
+        public static void SaveFlusso2DB(Models.FlussoS.FlussoMisure FlussoS, string nomeDB, SqlConnection connessione, string FolderLavoro, int IdFile, string fileName, ILog log)
         {
             if (FlussoS == null || FlussoS.DatiPod == null || FlussoS.DatiPod.Length == 0)
                 return;
@@ -1153,7 +1153,7 @@ namespace Vendita.HubMisureEE.Services
 
             //PRELIEVO ULTIMO ID LETTURA
             int IdLettura = 0;
-            string queryId = @"SELECT IDENT_CURRENT('HubLetture.dbo.LettureSF') AS IdLettura";
+            string queryId = $@"SELECT IDENT_CURRENT('{nomeDB}.dbo.LettureSF') AS IdLettura";
 
             using (SqlCommand cmd = new SqlCommand(queryId, connessione))
             {
@@ -1274,11 +1274,11 @@ namespace Vendita.HubMisureEE.Services
             }
 
             //Scrittura col Bulk
-            Bulk2DB(dtLetture, "HubLetture.dbo.LettureSF", connessione, log);
-            Bulk2DB(QE, "HubLetture.dbo.CurveS", connessione, log);
-            Bulk2DB(FileXml, "HubLetture.dbo.FileXmlEE", connessione, log);
+            Bulk2DB(dtLetture, $"{nomeDB}.dbo.LettureSF", connessione, log);
+            Bulk2DB(QE, $"{nomeDB}.dbo.CurveS", connessione, log);
+            Bulk2DB(FileXml, $"{nomeDB}.dbo.FileXmlEE", connessione, log);
 
-            FileLavorato(FolderLavoro, fileName, connessione, log);
+            FileLavorato(FolderLavoro, fileName,  log);
         }
 
         // Metodo per mappare i quartini in QE, con gestione dinamica delle proprietà e parsing dei valori
@@ -1404,7 +1404,7 @@ namespace Vendita.HubMisureEE.Services
         }
 
         // Metodo per eliminare il file dopo la lavorazione e loggare l'evento
-        private static void FileLavorato(string folderLavoro, string namefile, SqlConnection connessione, ILog log)
+        private static void FileLavorato(string folderLavoro, string namefile,  ILog log)
         {
             File.Delete(Path.Combine(folderLavoro, namefile));
             //HubLog.SaveLog2DB("INFO", "SaveFlussoEE",$"File Valido: {namefile}", connessione);

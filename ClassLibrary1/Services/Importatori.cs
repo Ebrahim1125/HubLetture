@@ -8,7 +8,7 @@ namespace Vendita.HubMisureEE.Services
 {
     public static class Importatori
     {
-        public static void Importa(string folderSorgente, string folderLavoro, string stringaConnessione, ILog log)
+        public static void Importa(string folderSorgente, string folderLavoro, string DBNameEString, ILog log)
         {
             /// Importa file XML a partire da uno o più archivi ZIP presenti in una cartella sorgente./// 
             /// Flusso operativo:/// 
@@ -22,12 +22,12 @@ namespace Vendita.HubMisureEE.Services
             int IdFile = 0;
             int filelavorati = 0;
 
-            List<string> flusso = ZipExtractorService.UnloadZip(folderSorgente, folderLavoro, stringaConnessione, out IdFile, log);
+            List<string> flusso = ZipExtractorService.UnloadZip(folderSorgente, folderLavoro, DBNameEString, out IdFile, log);
             foreach (string Doc in flusso)
             {
                 XmlDocument doc = new XmlDocument();
                 doc.Load(Path.Combine(folderLavoro, Doc));
-                CaricaXML.LoadXml(doc, stringaConnessione, folderLavoro, IdFile++, log);
+                CaricaXML.LoadXml(doc, DBNameEString, folderLavoro, IdFile++, log);
                 filelavorati++;
             }
 
