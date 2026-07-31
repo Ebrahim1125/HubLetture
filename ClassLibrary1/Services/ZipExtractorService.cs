@@ -59,12 +59,12 @@ namespace Vendita.HubMisureEE.Services
             IdFile = 0;
             try
             {
-                string[] elementiDB = DBNameEString.Split('_');
-                using (SqlConnection conn = new SqlConnection(elementiDB[1]))
+                string[] elementDB = DBNameEString.Split('<');
+                using (SqlConnection conn = new SqlConnection(elementDB[1]))
                 {
                     conn.Open();
                     //Caricamento dei nomi dei file xml già presenti nel database, con gestione degli errori.
-                    using (var FileXmlDb = new SqlDataAdapter($"SELECT IdFile, NomeFile, Lavorato FROM {elementiDB[0]}.dbo.FileXmlEE", conn))
+                    using (var FileXmlDb = new SqlDataAdapter($"SELECT IdFile, NomeFile, Lavorato FROM {elementDB[0]}.dbo.FileXmlEE", conn))
                     {
                         FileXmlDb.Fill(FileXml);
                         IdFile = FileXml.Rows.Count + 1;

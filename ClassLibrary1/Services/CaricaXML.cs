@@ -32,7 +32,7 @@ namespace Vendita.HubMisureEE.Services
 
             try
             {
-                string[] elementDB = DBNameEString.Split('_');
+                string[] elementDB = DBNameEString.Split('<');
                 using (SqlConnection connessione = new SqlConnection(elementDB[1]))
                 {
                     connessione.Open();
@@ -160,7 +160,7 @@ namespace Vendita.HubMisureEE.Services
             catch (Exception ex)
             {
                 //HubLog.SaveLog2DB("Error", "CaricaXml.LoadXml", ex.ToString(), connectionString);
-                log.Error("EE.CaricaXml.LoadXml" + ex.ToString());
+                log.Error("EE.CaricaXml.LoadXml " + ex.ToString());
             }
         }
 

@@ -17,7 +17,7 @@ namespace Vendita.HubMisureEE.Services
             try
             {
                 string query = $@"SELECT l.IdFile FROM {nomeDB}.dbo.LettureEE l
-                     LEFT JOIN HubLetture.dbo.CurveEE c ON l.Id = c.IdLetture 
+                     LEFT JOIN {nomeDB}.dbo.CurveEE c ON l.Id = c.IdLetture 
                      WHERE l.PIvaUtente = @PIvaUtente
                      AND l.PIvaDistributore = @PIvaDistributore
                      AND l.Pod = @Pod 
